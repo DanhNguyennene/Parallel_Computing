@@ -75,16 +75,7 @@ int main(int argc, char **argv){
 
         double local_start = MPI_Wtime();
 
-        // for (int i = 0; i < rows_per_proc; i++){
-        //     for(int j = 0; j < N; j++){
-        //         int sum = 0;
-        //         for (int k = 0; k < N; k++){
-        //             sum += local_a[i*N+k] * B[k*N+j]; 
-        //         }
-
-        //         local_c[i*N+j] = sum;
-        //     }
-        // }
+   
 
         for (int i = 0; i < rows_per_proc; i++){
             for (int k = 0; k < N; k++){
