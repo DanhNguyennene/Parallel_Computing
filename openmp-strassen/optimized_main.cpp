@@ -10,7 +10,7 @@
 #define UPPER_B 1.0
 
 #define MAX_DEPTH 4
-#define THRESHOLD 512
+#define THRESHOLD 256
 
 class Timer{
     std::chrono::high_resolution_clock::time_point start_;
@@ -44,6 +44,7 @@ void naiveMultiply(
     float* C,
     int ldc
 ){
+    #pragma omp parallel for collapse(2) schedule(static) default(none) shared(n, A, B, C, lda, ldb, ldc)
     for(int i = 0; i < n; ++i){
         for(int k = 0; k < n; ++k){
             float a_ik = A[i * lda + k];
@@ -58,6 +59,7 @@ void naiveMultiply(
 void addMatrix(
     int n, const float* A, int lda, const float* B, int ldb , float* C, int ldc
 ){
+    
     for(int i = 0; i < n; i++){
         #pragma omp simd
         for(int j =0; j < n; j++){
@@ -163,14 +165,14 @@ void strassenParallel(
     int depth
 ){
     if (depth >= MAX_DEPTH){
-        size_t stackSize  = (size_t)(3.5 * n * n);
+        size_t stackSize  = (size_t)(3 * n * n);
         std::vector<float> serialStack(stackSize);
         strassenSerial(n, A, lda, B, ldb, C, ldc, serialStack.data());
         return;
     }
 
     int m = n / 2;
-    std::vector<float> results(7 * m * m);
+    std::vector<float> results(17 * m * m);
     float* M1 = &results[0];         
     float* M2 = &results[m*m];
     float* M3 = &results[2*m*m];     
@@ -178,6 +180,7 @@ void strassenParallel(
     float* M5 = &results[4*m*m];     
     float* M6 = &results[5*m*m];
     float* M7 = &results[6*m*m];
+
 
     const float* A11 = A;             
     const float* A12 = A + m;
