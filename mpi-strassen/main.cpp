@@ -6,10 +6,12 @@
 #include <chrono>
 #include <vector>
 #include <random>
+#include <cstring>
 
 #define LOWER_B 0.0
 #define UPPER_B 1.0
 #define THRESHOLD 128
+
 
 
 class Timer{
@@ -26,21 +28,26 @@ class Timer{
 
 
 void naiveMultiply(
-    int size, 
-    const std::vector<float>& A, 
-    const std::vector<float>& B,
-    std::vector<float>& C
+    int n, 
+    const float* A,
+    int lda,
+    const float* B,
+    int ldb,
+    float* C,
+    int ldc
 ){
-    for(int i = 0; i < size; i++){
-        for(int j = 0; j < size; j++){
-            float sum = 0.0;
-            for (int k = 0; k < size; k++){
-                sum += A[i * size + k] * B[k* size + j];
+    for(int i = 0; i < n; ++i){
+        for(int k = 0; k < n; ++k){
+            float a_ik = A[i * lda + k];
+            
+            for (int j = 0; j < n; ++j){
+                C[i * ldc + j] += a_ik * B[k * ldb + j];
             }
-            C[i * size + j] = sum;
         }
     }
 }
+
+
 
 std::vector<float> createRandomMatrix(int size, int seed){
     std::vector<float> matrix(size*size);
@@ -52,287 +59,326 @@ std::vector<float> createRandomMatrix(int size, int seed){
     return matrix;
 }
 
-
-inline void add2Matrix(
-    int size, 
-    const std::vector<float>& A, 
-    const std::vector<float>& B,
-    std::vector<float>& result
+void addMatrix(
+    int n, const float* A, int lda, const float* B, int ldb , float* C, int ldc
 ){
-    for (int i = 0; i < size * size; i++){
-        result[i] = A[i] + B[i];
-    }
-}
-
-
-inline void subtract2Matrix(
-    int size, 
-    const std::vector<float>& A, 
-    const std::vector<float>& B,
-    std::vector<float>& result
-){
-    for (int i = 0; i < size * size; i++){
-        result[i] = A[i] - B[i];
-    }
-}
-
-void extractSubmat(
-    int size,
-    const std::vector<float>& source,
-    int startRow,
-    int startCol,
-    std::vector<float>& dest,
-    int destSize
-){
-    for(int i = 0; i < destSize; i++){
-        for (int j = 0; j < destSize; j++){
-            dest[i * destSize + j] = source[(i+startRow) * size + (j + startCol)];
+    
+    for(int i = 0; i < n; i++){
+        for(int j =0; j < n; j++){
+            C[i * ldc + j] = A[i * lda + j] + B[i * ldb + j];
         }
     }
 }
 
-void combine4SubMat(
-    int m,
-    const std::vector<float>& C11,
-    const std::vector<float>& C12,
-    const std::vector<float>& C21,
-    const std::vector<float>& C22,
-    std::vector<float>& result
+void subtractMatrix(
+    int n, const float* A, int lda, const float* B, int ldb , float* C, int ldc
 ){
-    int N = 2 * m;
-    for (int i = 0; i < m; i++){
-        std::copy(C11.begin() + i * m, C11.begin() + (i + 1) * m, result.begin() + i * N); // A11
-        std::copy(C12.begin() + i * m, C12.begin() + (i + 1) * m, result.begin() + i * N + m); // A12
-    }
-    for (int i = 0; i < m; i++){
-        std::copy(C21.begin() + i * m, C21.begin() + (i + 1) * m, result.begin() + (i + m) * N);
-        std::copy(C22.begin() + i * m, C22.begin() + (i + 1) * m, result.begin() + (i + m) * N + m);
+    for(int i = 0; i < n; i++){
+        for(int j =0; j < n; j++){
+            C[i * ldc + j] = A[i * lda + j] - B[i * ldb + j];
+        }
     }
 }
 
-void strassen(
-    int size, 
-    const std::vector<float>& A,
-    const std::vector<float>& B,
-    std::vector<float>& C
+
+void strassenSerial(
+    int n, 
+    const float* A, int lda,
+    const float* B, int ldb,
+    float* C, int ldc,
+    float* work
 ){
-    if (size < THRESHOLD){
-        naiveMultiply(size, A, B, C);
+    if (n <= THRESHOLD || n % 2 != 0) {
+        for (int i = 0; i < n; i++) {
+            std::memset(C + i * ldc, 0, n * sizeof(float));
+        }
+        naiveMultiply(n, A, lda, B, ldb, C, ldc);
         return;
     }
+    int m = n / 2;
+    float* M1 = work; 
+    float* M2 = work + m*m; 
+    float* M3 = work + 2*m*m; 
+    float* M4 = work + 3*m*m;
+    float* M5 = work + 4*m*m; 
+    float* M6 = work + 5*m*m;
+    float* M7 = work + 6*m*m; 
+    float* T1 = work + 7*m*m; 
+    float* T2 = work + 8*m*m;
 
-    if (size % 2 != 0){
-        // padded
-        int newSize = size + 1;
-        std::vector<float> A_padded(newSize * newSize, 0.0);
-        std::vector<float> B_padded(newSize * newSize, 0.0);
-        std::vector<float> C_padded(newSize * newSize, 0.0);
+    float* nextWork = work + 9*m*m;
 
-        for (int i = 0; i < size; i++){
-            std::copy(A.begin() + i * size, A.begin() + (i + 1) * size, A_padded.begin() + i * newSize);
-            std::copy(B.begin() + i * size, B.begin() + (i + 1) * size, B_padded.begin() + i * newSize);
+    const float* A11 = A;             
+    const float* A12 = A + m;
+    const float* A21 = A + m * lda;   
+    const float* A22 = A + m * lda + m;
+    
+    const float* B11 = B;             
+    const float* B12 = B + m;
+    const float* B21 = B + m * ldb;   
+    const float* B22 = B + m * ldb + m;
+
+    // M1 = (A11 + A22)(B11 + B22)
+    addMatrix(m, A11, lda, A22, lda, T1, m);
+    addMatrix(m, B11, ldb, B22, ldb, T2, m);
+    strassenSerial(m, T1, m, T2, m, M1, m, nextWork);
+
+    // M2 = (A21 + A22)B11
+    addMatrix(m, A21, lda, A22, lda, T1, m);
+    strassenSerial(m, T1, m, B11, ldb, M2, m, nextWork);
+
+    // M3 = A11(B12 - B22)
+    subtractMatrix(m, B12, ldb, B22, ldb, T1, m);
+    strassenSerial(m, A11, lda, T1, m, M3, m, nextWork);
+
+    // M4 = A22(B21 - B11)
+    subtractMatrix(m, B21, ldb, B11, ldb, T1, m);
+    strassenSerial(m, A22, lda, T1, m, M4, m, nextWork);
+
+    // M5 = (A11 + A12)B22
+    addMatrix(m, A11, lda, A12, lda, T1, m);
+    strassenSerial(m, T1, m, B22, ldb, M5, m, nextWork);
+
+    // M6 = (A21 - A11)(B11 + B12)
+    subtractMatrix(m, A21, lda, A11, lda, T1, m);
+    addMatrix(m, B11, ldb, B12, ldb, T2, m);
+    strassenSerial(m, T1, m, T2, m, M6, m, nextWork);
+
+    // M7 = (A12 - A22)(B21 + B22)
+    subtractMatrix(m, A12, lda, A22, lda, T1, m);
+    addMatrix(m, B21, ldb, B22, ldb, T2, m);
+    strassenSerial(m, T1, m, T2, m, M7, m, nextWork);
+
+
+    for (int i = 0; i < m ; i++){   
+        for (int j = 0; j < m; j++){
+            int k = i * m + j;
+            C[i * ldc + j] = M1[k] + M4[k] - M5[k] + M7[k]; // C11
+            C[i * ldc + (j + m)] = M3[k] + M5[k]; // C12
+            C[(i + m) * ldc + j] = M2[k] + M4[k]; // C21
+            C[(i + m) * ldc + (j + m)] = M1[k] - M2[k] + M3[k] + M6[k];
         }
-        strassen(newSize, A_padded, B_padded, C_padded);
-        for (int i = 0; i < size; i++){
-            std::copy(
-                C_padded.begin() + i * newSize,
-                C_padded.begin() + i * newSize + size,
-                C.begin() + i * size
-            );
-        }
-        return;
     }
-
-    int m = size / 2;
-    std::vector<float> A11(m * m), A12(m * m), A21(m * m), A22(m * m);
-    std::vector<float> B11(m * m), B12(m * m), B21(m * m), B22(m * m);
-
-
-    extractSubmat(size, A, 0, 0, A11, m);
-    extractSubmat(size, A, 0, m, A12, m);
-    extractSubmat(size, A, m, 0, A21, m);
-    extractSubmat(size, A, m, m, A22, m);
-    
-    extractSubmat(size, B, 0, 0, B11, m);
-    extractSubmat(size, B, 0, m, B12, m);
-    extractSubmat(size, B, m, 0, B21, m);
-    extractSubmat(size, B, m, m, B22, m);
-
-    std::vector<float> M1(m * m, 0.0), M2(m * m, 0.0), M3(m * m, 0.0), M4(m * m, 0.0);
-    std::vector<float> M5(m * m, 0.0), M6(m * m, 0.0), M7(m * m, 0.0);
-
-    std::vector<float> temp1(m * m), temp2(m * m), temp3(m * m);
-
-    // M1 = (A11 + A22) * (B11 + B22)
-    add2Matrix(m, A11, A22, temp1);
-    add2Matrix(m, B11, B22, temp2);
-    strassen(m, temp1, temp2, M1);
-
-    // M2 = (A21 + A22) * B11
-    add2Matrix(m, A21, A22, temp1);
-    strassen(m, temp1, B11, M2);
-    
-    // M3 = A11 * (B12 - B22)
-    subtract2Matrix(m, B12, B22, temp2);
-    strassen(m, A11, temp2, M3);
-    
-    // M4 = A22 * (B21 - B11)
-    subtract2Matrix(m, B21, B11, temp2);
-    strassen(m, A22, temp2, M4);
-    
-    // M5 = (A11 + A12) * B22
-    add2Matrix(m, A11, A12, temp1);
-    strassen(m, temp1, B22, M5);
-    
-    // M6 = (A21 - A11) * (B11 + B12)
-    subtract2Matrix(m, A21, A11, temp1);
-    add2Matrix(m, B11, B12, temp2);
-    strassen(m, temp1, temp2, M6);
-
-    // M7 = (A12 - A22) * (B21 + B22)
-    subtract2Matrix(m, A12, A22, temp1);  
-    add2Matrix(m, B21, B22, temp2);
-    strassen(m, temp1, temp2, M7);
-
-    std::vector<float> C11(m * m), C12(m * m), C21(m * m), C22(m * m);
-    
-    // C11 = M1 + M4 - M5 + M7
-    add2Matrix(m, M1, M4, temp1);
-    subtract2Matrix(m, temp1, M5, temp2);
-    add2Matrix(m, temp2, M7, C11);
-    
-    // C12 = M3 + M5
-    add2Matrix(m, M3, M5, C12);
-    
-    // C21 = M2 + M4
-    add2Matrix(m, M2, M4, C21);
-    
-    // C22 = M1 - M2 + M3 + M6
-    subtract2Matrix(m, M1, M2, temp1);
-    add2Matrix(m, temp1, M3, temp2);
-    add2Matrix(m, temp2, M6, C22);
-    
-    // Combine into final result
-    combine4SubMat(m, C11, C12, C21, C22, C);
 
 }
 
 
 
-void worker(int rank, int N){
+void strassen_mpi_wrapper(
+    int N,  
+    int rank,
+    int numProcs,
+    int* sendcounts,
+    int* displs,
+    const float* A, 
+    int lda,
+    const float* B,
+    int ldb,
+    float* C,
+    int ldc,
+    int recvCount,
+    float* recvbuf,
+    Timer* timer
+){
+  
+    int totalSend = 0;
     int m = N / 2;
-
-    MPI_Status status;
-
-    int numMatrices = (rank == 1 || rank == 6 || rank == 7) ? 4 : 3;
-    std::vector<float> buffer(numMatrices * m * m);
-    std::vector<float> M(m * m, 0.0);
-
-    MPI_Recv(buffer.data(), numMatrices * m * m, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, &status);
+    for(int i = 0; i < numProcs; i++) totalSend += sendcounts[i];
     
-    switch(rank){
-        case 1: {
-            // M1 = (A11 + A22) * (B11 + B22)
-            std::vector<float> A11(m*m), A22(m*m), B11(m*m), B22(m*m);
-            A11.assign(buffer.begin(), buffer.begin() + m*m);
-            A22.assign(buffer.begin() + m*m, buffer.begin() + 2*m*m);
-            B11.assign(buffer.begin() + 2*m*m, buffer.begin() + 3*m*m);
-            B22.assign(buffer.begin() + 3*m*m, buffer.end());
+    
+    std::vector<float> scatterBuf(totalSend, 0.0f);
 
-            std::vector<float> sumA(m * m), sumB(m * m);
-            add2Matrix(m, A11, A22, sumA);
-            add2Matrix(m, B11, B22, sumB);
-            strassen(m, sumA, sumB, M);
-            break;
-        }
-        case 2: { // M2 = (A21 + A22) * B11
-            std::vector<float> A21(m * m), A22(m * m), B11(m * m);
-            A21.assign(buffer.begin(), buffer.begin() + m*m);
-            A22.assign(buffer.begin() + m*m, buffer.begin() + 2*m*m);
-            B11.assign(buffer.begin() + 2*m*m, buffer.end());
-            
-            std::vector<float> sumA(m * m);
-            add2Matrix(m, A21, A22, sumA);
-            strassen(m, sumA, B11, M);
-            break;
-        }
-        case 3: { // M3 = A11 * (B12 - B22)
-            std::vector<float> A11(m * m), B12(m * m), B22(m * m);
-            A11.assign(buffer.begin(), buffer.begin() + m*m);
-            B12.assign(buffer.begin() + m*m, buffer.begin() + 2*m*m);
-            B22.assign(buffer.begin() + 2*m*m, buffer.end());
-            
-            std::vector<float> diffB(m * m);
-            subtract2Matrix(m, B12, B22, diffB);
-            strassen(m, A11, diffB, M);
-            break;
-        }
-        case 4 : { // M4 = A22 * (B21 - B11)
-            std::vector<float> A22(m * m), B21(m * m), B11(m * m);
-            A22.assign(buffer.begin(), buffer.begin() + m*m);
-            B21.assign(buffer.begin() + m*m, buffer.begin() + 2*m*m);
-            B11.assign(buffer.begin() + 2*m*m, buffer.end());
-            
-            std::vector<float> diffB(m * m);
-            subtract2Matrix(m, B21, B11, diffB);
-            strassen(m, A22, diffB, M);
-            break;
-        }
-        case 5 : { // M5 = (A11 + A12) * B22
-            std::vector<float> A11(m * m), A12(m * m), B22(m * m);
-            A11.assign(buffer.begin(), buffer.begin() + m*m);
-            A12.assign(buffer.begin() + m*m, buffer.begin() + 2*m*m);
-            B22.assign(buffer.begin() + 2*m*m, buffer.end());
-            
-            std::vector<float> sumA(m * m);
-            add2Matrix(m, A11, A12, sumA);
-            strassen(m, sumA, B22, M);
-            break;
-        }
-        case 6: { // M6 = (A21 - A11) * (B11 + B12)
-            std::vector<float> A21(m * m), A11(m * m), B11(m * m), B12(m * m);
-            A21.assign(buffer.begin(), buffer.begin() + m*m);
-            A11.assign(buffer.begin() + m*m, buffer.begin() + 2*m*m);
-            B11.assign(buffer.begin() + 2*m*m, buffer.begin() + 3*m*m);
-            B12.assign(buffer.begin() + 3*m*m, buffer.end());
-            
-            std::vector<float> diffA(m * m), sumB(m * m);
-            subtract2Matrix(m, A21, A11, diffA);
-            add2Matrix(m, B11, B12, sumB);
-            strassen(m, diffA, sumB, M);
-            break;
-        }
-        case 7 : {  // M7 = (A12 - A22) * (B21 + B22)
-            std::vector<float> A12(m * m), A22(m * m), B21(m * m), B22(m * m);
-            A12.assign(buffer.begin(), buffer.begin() + m*m);
-            A22.assign(buffer.begin() + m*m, buffer.begin() + 2*m*m);
-            B21.assign(buffer.begin() + 2*m*m, buffer.begin() + 3*m*m);
-            B22.assign(buffer.begin() + 3*m*m, buffer.end());
-            
-            
-            std::vector<float> diffA(m * m), sumB(m * m);
-            subtract2Matrix(m, A12, A22, diffA);
-            add2Matrix(m, B21, B22, sumB);
-            strassen(m, diffA, sumB, M);
-            break;
-        }
+    const float* A11;
+    const float* A12;
+    const float* A21;
+    const float* A22;
+    const float* B11;
+    const float* B12;
+    const float* B21;
+    const float* B22;
+    
+    if (rank == 0){
+        A11 = A;
+        A12 = A + m;
+        A21 = A + m * lda;   
+        A22 = A + m * lda + m;
+        
+        B11 = B;             
+        B12 = B + m;
+        B21 = B + m * ldb;   
+        B22 = B + m * ldb + m;
+
+        auto pack_submatrix = [&](float* dest, const float* src, int rows, int lddest, int ldsrc){
+            for(int i = 0; i < rows; i++){
+                for(int j = 0; j < rows; j++){
+                    dest[i * lddest + j] = src[i * ldsrc + j];
+                }
+            }
+        };
+        pack_submatrix(scatterBuf.data() + displs[1], A11, m, m, lda);
+        pack_submatrix(scatterBuf.data() + displs[1] + m*m , A22, m, m, lda);
+        pack_submatrix(scatterBuf.data() + displs[1] + 2*m*m, B11, m,m,ldb);
+        pack_submatrix(scatterBuf.data() + displs[1] + 3*m*m, B22, m,m,ldb);
+
+        pack_submatrix(scatterBuf.data() + displs[2], A21, m,m,lda);
+        pack_submatrix(scatterBuf.data() + displs[2] + m*m, A22, m,m,lda);
+        pack_submatrix(scatterBuf.data() + displs[2]+ 2*m*m, B11, m,m,ldb);
+
+        pack_submatrix(scatterBuf.data() + displs[3], A11, m,m,lda);
+        pack_submatrix(scatterBuf.data() + displs[3] + m*m, B12, m,m,ldb);
+        pack_submatrix(scatterBuf.data() + displs[3]+ 2*m*m, B22, m,m,ldb);
+
+        pack_submatrix(scatterBuf.data() + displs[4], A22, m,m,lda);
+        pack_submatrix(scatterBuf.data() + displs[4] + m*m, B21, m,m,ldb);
+        pack_submatrix(scatterBuf.data() + displs[4]+ 2*m*m, B11, m,m,ldb);
+
+        pack_submatrix(scatterBuf.data() + displs[5], A11, m,m,lda);
+        pack_submatrix(scatterBuf.data() + displs[5] + m*m, A12, m,m,lda);
+        pack_submatrix(scatterBuf.data() + displs[5]+ 2*m*m, B22, m,m,ldb);
+
+        pack_submatrix(scatterBuf.data() + displs[6], A21, m, m, lda);
+        pack_submatrix(scatterBuf.data() + displs[6] + m*m , A11, m, m, lda);
+        pack_submatrix(scatterBuf.data() + displs[6] + 2*m*m, B11, m,m, ldb);
+        pack_submatrix(scatterBuf.data() + displs[6] + 3*m*m, B12, m,m, ldb);
     }
+    
 
-    MPI_Send(M.data(), m*m, MPI_FLOAT, 0, rank, MPI_COMM_WORLD);
+
+    MPI_Scatterv(
+        scatterBuf.data(), 
+        sendcounts, 
+        displs, 
+        MPI_FLOAT,
+        recvbuf, 
+        recvCount, 
+        MPI_FLOAT,
+        0, 
+        MPI_COMM_WORLD
+    );
+    size_t stackSize = (size_t)(3 * N * N);
+    std::vector<float> serialStack(stackSize);
+    std::vector<float> M(m*m, 0.0f);
+
+    if (rank == 0){
+        std::vector<float>T(2*m*m);
+        float* t1 = &T[0]; float* t2 = &T[m*m];
+        
+        subtractMatrix(m, A12, lda, A22, lda, t1, m);
+        addMatrix(m, B21, ldb, B22, ldb, t2, m);
+        strassenSerial(m, t1, m, t2, m, M.data(), m, serialStack.data());
+    }
+    else if (rank == 1){
+        // M1 = (A11 + A22)(B11 + B22)
+        A11 = &recvbuf[0];
+        A22 = &recvbuf[m*m];
+        B11 = &recvbuf[2*m*m];
+        B22 = &recvbuf[3*m*m];
+
+        std::vector<float>T(2*m*m);
+        float* t1 = &T[0]; float* t2 = &T[m*m];
+        addMatrix(m, A11, m, A22, m, t1, m);
+        addMatrix(m, B11, m, B22, m, t2, m);
+        strassenSerial(m, t1, m, t2, m, M.data(), m, serialStack.data());
+        
+        // std::cout<<"HI"<<std::endl;
+        // printMatrix(m, M.data(), m);
+        // std::cout<< std::endl;
+
+
+    }else if (rank == 2){
+        A21 = &recvbuf[0];
+        A22 = &recvbuf[m*m];
+        B11 = &recvbuf[2*m*m];
+
+        std::vector<float>T(m*m);
+        addMatrix(m, A21, m, A22, m, T.data(), m);
+        strassenSerial(m, T.data(), m, B11, m, M.data(), m, serialStack.data());
+
+    }else if (rank == 3){
+        A11 = &recvbuf[0];
+        B12 = &recvbuf[m*m];
+        B22 = &recvbuf[2*m*m];
+
+        std::vector<float>T(m*m);
+        subtractMatrix(m, B12, m, B22, m, T.data(), m);
+        strassenSerial(m, A11, m, T.data(), m, M.data(), m , serialStack.data());
+    }else if (rank == 4){
+        A22 = &recvbuf[0];
+        B21 = &recvbuf[m*m];
+        B11 = &recvbuf[2*m*m];
+
+        std::vector<float>T(m*m);
+        subtractMatrix(m, B21, m, B11, m, T.data(), m);
+        strassenSerial(m, A22, m, T.data(), m, M.data(), m, serialStack.data());
+    }else if (rank == 5){
+        A11 = &recvbuf[0];
+        A12 = &recvbuf[m*m];
+        B22 = &recvbuf[2*m*m];
+
+        std::vector<float>T(m*m);
+        addMatrix(m, A11, m, A12, m, T.data(), m);
+        strassenSerial(m, T.data(), m, B22, m, M.data(), m, serialStack.data());
+    }else if (rank == 6){
+        A21 = &recvbuf[0];
+        A11 = &recvbuf[m*m];
+        B11 = &recvbuf[2*m*m];
+        B12 = &recvbuf[3*m*m];
+
+        std::vector<float>T(2*m*m);
+        float* t1 = &T[0]; float* t2 = &T[m*m];
+
+        subtractMatrix(m, A21, m, A11, m, t1, m);
+        addMatrix(m, B11, m, B12, m, t2, m);
+        strassenSerial(m, t1, m, t2, m, M.data() ,m , serialStack.data());
+    }
+    
+    std::vector<float> gatherBuf;
+    if (rank == 0) gatherBuf.resize(numProcs * m * m, 0.0f);
+    MPI_Gather(
+        M.data(), 
+        m*m, 
+        MPI_FLOAT, 
+        gatherBuf.data(), 
+        m*m, 
+        MPI_FLOAT,
+        0, 
+        MPI_COMM_WORLD
+    );
+
+    if (rank == 0) {
+        std::cout<< gatherBuf.size() << std::endl;
+        float* M7 = gatherBuf.data();
+        float* M1 = M7 + m*m;
+        float* M2 = M1 + m*m;
+        float* M3 = M2 + m*m;
+        float* M4 = M3 + m*m;
+        float* M5 = M4 + m*m;
+        float* M6 = M5 + m*m;
+       
+
+        for(int i = 0; i < m ; i++){
+            for (int j = 0; j < m; j++){
+                int k = i * m + j;
+                C[i * ldc + j] = M1[k] + M4[k] - M5[k] + M7[k]; // C11
+                C[i * ldc + (j + m)] = M3[k] + M5[k]; // C12
+                C[(i + m) * ldc + j] = M2[k] + M4[k]; // C21
+                C[(i + m) * ldc + (j + m)] = M1[k] - M2[k] + M3[k] + M6[k];
+            }
+        }
+        float totalTime = timer->elapse();
+        std::cout << "Strassen completed in " << totalTime << " seconds.\n";
+    }   
 }
 
-
-// N will always be 100, 1000, 10000
-// ./main <size matrix: 100> <test mat correct:0 or 1 for mat <= 100>
-int main(int argc, char ** argv){
+int main(int argc, char**argv){
     int rank, numProcs;
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
 
-    if (numProcs != 8){
+    if (numProcs != 7){
         if (rank == 0) {
-            std::cerr << "Error: This implementation requires exactly 8 processes.\n";
+            std::cerr << "Error: This implementation requires exactly 7 processes.\n";
         }
         MPI_Finalize();
         return 1;
@@ -346,158 +392,164 @@ int main(int argc, char ** argv){
         return 1;
     }
 
-    Timer timer;
-    double totalTime = 0.0;
-
     int N = std::atoi(argv[1]);
-    std::vector<float> C(N * N, 0.0f);
-    std::vector<float> A, B; 
+    Timer timer;
 
-    if (rank == 0){
-        std::cout << "Initializing matrices of size " << N << "x" << N << "...\n";
-        A = createRandomMatrix(N, 123);
-        B = createRandomMatrix(N, 456);
-        int m = N / 2; 
-        timer.start();
-        std::vector<float> A11(m*m), A12(m*m), A21(m*m), A22(m*m);
-        std::vector<float> B11(m*m), B12(m*m), B21(m*m), B22(m*m);
+    int k = THRESHOLD;
+    int paddedSize = ((N + k - 1) / k) * k;
 
-        extractSubmat(N, A, 0, 0, A11, m);
-        extractSubmat(N, A, 0, m, A12, m);
-        extractSubmat(N, A, m, 0, A21, m);
-        extractSubmat(N, A, m, m, A22, m);
-        
-        extractSubmat(N, B, 0, 0, B11, m);
-        extractSubmat(N, B, 0, m, B12, m);
-        extractSubmat(N, B, m, 0, B21, m);
-        extractSubmat(N, B, m, m, B22, m);
-
-        MPI_Request recvReqs[7];
-        std::vector<float> M1(m*m), M2(m*m), M3(m*m), M4(m*m), M5(m*m), M6(m*m), M7(m*m);
-        
-        MPI_Irecv(M1.data(), m*m, MPI_FLOAT, 1, 1, MPI_COMM_WORLD, &recvReqs[0]);
-        MPI_Irecv(M2.data(), m*m, MPI_FLOAT, 2, 2, MPI_COMM_WORLD, &recvReqs[1]);
-        MPI_Irecv(M3.data(), m*m, MPI_FLOAT, 3, 3, MPI_COMM_WORLD, &recvReqs[2]);
-        MPI_Irecv(M4.data(), m*m, MPI_FLOAT, 4, 4, MPI_COMM_WORLD, &recvReqs[3]);
-        MPI_Irecv(M5.data(), m*m, MPI_FLOAT, 5, 5, MPI_COMM_WORLD, &recvReqs[4]);
-        MPI_Irecv(M6.data(), m*m, MPI_FLOAT, 6, 6, MPI_COMM_WORLD, &recvReqs[5]);
-        MPI_Irecv(M7.data(), m*m, MPI_FLOAT, 7, 7, MPI_COMM_WORLD, &recvReqs[6]);
-
-        MPI_Request sendReqs[7];
-
-        std::vector<float> buf1 (4*m*m);
-        std::copy(A11.begin(), A11.end(), buf1.begin());
-        std::copy(A22.begin(), A22.end(), buf1.begin() + m*m);
-        std::copy(B11.begin(), B11.end(), buf1.begin() + m*m*2);
-        std::copy(B22.begin(), B22.end(), buf1.begin() + m*m*3);
-        MPI_Isend(buf1.data(), 4*m*m, MPI_FLOAT, 1, 0, MPI_COMM_WORLD, &sendReqs[0]);
-
-        std::vector<float> buf2(3*m*m);
-        std::copy(A21.begin(), A21.end(), buf2.begin());
-        std::copy(A22.begin(), A22.end(), buf2.begin() + m*m);
-        std::copy(B11.begin(), B11.end(), buf2.begin() + 2*m*m);
-        MPI_Isend(buf2.data(), 3*m*m, MPI_FLOAT, 2, 0, MPI_COMM_WORLD, &sendReqs[1]);
-
-        std::vector<float> buf3(3*m*m);
-        std::copy(A11.begin(), A11.end(), buf3.begin());
-        std::copy(B12.begin(), B12.end(), buf3.begin() + m*m);
-        std::copy(B22.begin(), B22.end(), buf3.begin() + 2*m*m);
-        MPI_Isend(buf3.data(), 3*m*m, MPI_FLOAT, 3, 0, MPI_COMM_WORLD, &sendReqs[2]);
-
-        std::vector<float> buf4(3*m*m);
-        std::copy(A22.begin(), A22.end(), buf4.begin());
-        std::copy(B21.begin(), B21.end(), buf4.begin() + m*m);
-        std::copy(B11.begin(), B11.end(), buf4.begin() + 2*m*m);
-        MPI_Isend(buf4.data(), 3*m*m, MPI_FLOAT, 4, 0, MPI_COMM_WORLD, &sendReqs[3]);
-
-        std::vector<float> buf5(3*m*m);
-        std::copy(A11.begin(), A11.end(), buf5.begin());
-        std::copy(A12.begin(), A12.end(), buf5.begin() + m*m);
-        std::copy(B22.begin(), B22.end(), buf5.begin() + 2*m*m);
-        MPI_Isend(buf5.data(), 3*m*m, MPI_FLOAT, 5, 0, MPI_COMM_WORLD, &sendReqs[4]);
-
-        std::vector<float> buf6(4*m*m);
-        std::copy(A21.begin(), A21.end(), buf6.begin());
-        std::copy(A11.begin(), A11.end(), buf6.begin() + m*m);
-        std::copy(B11.begin(), B11.end(), buf6.begin() + 2*m*m);
-        std::copy(B12.begin(), B12.end(), buf6.begin() + 3*m*m);
-        MPI_Isend(buf6.data(), 4*m*m, MPI_FLOAT, 6, 0, MPI_COMM_WORLD, &sendReqs[5]);
-
-        std::vector<float> buf7(4*m*m);
-        std::copy(A12.begin(), A12.end(), buf7.begin());
-        std::copy(A22.begin(), A22.end(), buf7.begin() + m*m);
-        std::copy(B21.begin(), B21.end(), buf7.begin() + 2*m*m);
-        std::copy(B22.begin(), B22.end(), buf7.begin() + 3*m*m);
-        MPI_Isend(buf7.data(), 4*m*m, MPI_FLOAT, 7, 0, MPI_COMM_WORLD, &sendReqs[6]);
-
-        int recvCount = 0;
-        MPI_Status statuses[7];
-
-        while (recvCount < 7) {   
-            int idx;
-            MPI_Waitany(7, recvReqs, &idx, MPI_STATUS_IGNORE);
-            if (idx != MPI_UNDEFINED) {
-                recvCount++;
-            }
-        }
-
-        MPI_Waitall(7, sendReqs, MPI_STATUSES_IGNORE);
-        
-        std::vector<float> C11(m*m), C12(m*m), C21(m*m), C22(m*m);
-        std::vector<float> temp1(m*m), temp2(m*m);
-
-        // C11 = M1 + M4 - M5 + M7
-        add2Matrix(m, M1, M4, temp1);
-        subtract2Matrix(m, temp1, M5, temp2);
-        add2Matrix(m, temp2, M7, C11);
-        
-        // C12 = M3 + M5
-        add2Matrix(m, M3, M5, C12);
-        
-        // C21 = M2 + M4
-        add2Matrix(m, M2, M4, C21);
-        
-        // C22 = M1 - M2 + M3 + M6
-        subtract2Matrix(m, M1, M2, temp1);
-        add2Matrix(m, temp1, M3, temp2);
-        add2Matrix(m, temp2, M6, C22);
-        
-        combine4SubMat(m, C11, C12, C21, C22, C);
-        
-        totalTime = timer.elapse();
-        std::cout << "Strassen completed in " << totalTime << " seconds.\n";
-    } else {
-        worker(rank, N);
-    }
+    int temp = paddedSize;
+    while (temp > THRESHOLD) { // Limit depth
+        temp /= 2;
+    } 
     
-
     if (rank == 0){
+        std::cout << "N=" << N << ", Padded=" << paddedSize << std::endl;
+    }
 
-        int check = std::atoi(argv[2]);
-        if (check == 0) {
-            return 0;
+    std::vector<float> A, B, C(N*N, 0.0);
+    if (paddedSize != N){
+        std::vector<float> A_padded, B_padded, C_padded;
+        if (rank == 0){
+
+            
+            A = createRandomMatrix(N, 123);
+            B = createRandomMatrix(N, 456);
+            
+            A_padded.resize(paddedSize * paddedSize, 0.0);
+            B_padded.resize(paddedSize * paddedSize, 0.0);
+            C_padded.resize(paddedSize * paddedSize, 0.0);
+            
+            
+            for (int i = 0; i < N; ++i) {
+                for (int j = 0; j < N; ++j) {
+                    A_padded[i * paddedSize + j] = A[i * N + j];
+                    B_padded[i * paddedSize + j] = B[i * N + j];
+                }
+            }
+            A.clear();
+            B.clear();
+            
         }
         
-        std::vector<float> CC(N * N, 0.0f);
-        
-        
-        Timer naive_timer;
-        naive_timer.start();
-        naiveMultiply(N, A, B, CC);
-        double naiveTotalTime = naive_timer.elapse();
-        std::cout << "Naive completed in " << naiveTotalTime << " seconds.\n";
-        
-        double diff_sum = 0.0, ref_sum = 0.0;
-        for (int i = 0; i < N * N; ++i) {
-                double diff = C[i] - CC[i];
-                diff_sum += diff * diff;
-                ref_sum += CC[i] * CC[i];
-            }
-        double rel_error = std::sqrt(diff_sum / (ref_sum + 1e-12));
-        std::cout << "Relative L2 error between Strassen and naive: " << rel_error << "\n";
-            
-    }
-    MPI_Finalize();
 
+        int m = paddedSize / 2;
+        timer.start();
+        std::vector<int> sendcounts (7, 0.0);
+        sendcounts[0]= 0;
+        sendcounts[1] = 4*m*m;
+        sendcounts[2] = 3*m*m;
+        sendcounts[3] = 3*m*m;
+        sendcounts[4] = 3*m*m;
+        sendcounts[5] = 3*m*m;
+        sendcounts[6] = 4*m*m;
+    
+        std::vector<int> displs(7, 0);
+        for(int i = 1; i < 7; i++){
+            displs[i] = sendcounts[i-1] + displs[i-1];
+        }
+        MPI_Bcast(sendcounts.data(), numProcs, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(displs.data(), numProcs, MPI_INT, 0, MPI_COMM_WORLD);
+
+        int recvCount = sendcounts[rank];
+        std::vector<float> recvbuf(recvCount, 0.0);
+
+        strassen_mpi_wrapper(
+            paddedSize,
+            rank,
+            numProcs, 
+            sendcounts.data(),
+            displs.data(),
+            A_padded.data(),
+            paddedSize,
+            B_padded.data(),
+            paddedSize,
+            C_padded.data(),
+            paddedSize,
+            recvCount,
+            recvbuf.data(),
+            &timer
+        );
+
+        
+        if (rank == 0){
+            for (int i = 0; i < N; ++i) {
+                std::copy(C_padded.begin() + i * paddedSize, C_padded.begin() + i * paddedSize + N, C.begin() + i * N);
+            }
+        }
+
+    } else {
+
+        int m = N / 2;
+        timer.start();
+        std::vector<int> sendcounts (7, 0.0);
+        sendcounts[0]= 0;
+        sendcounts[1] = 4*m*m;
+        sendcounts[2] = 3*m*m;
+        sendcounts[3] = 3*m*m;
+        sendcounts[4] = 3*m*m;
+        sendcounts[5] = 3*m*m;
+        sendcounts[6] = 4*m*m;
+    
+        std::vector<int> displs(7, 0);
+        for(int i = 1; i < 7; i++){
+            displs[i] = sendcounts[i-1] + displs[i-1];
+        }
+        MPI_Bcast(sendcounts.data(), numProcs, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(displs.data(), numProcs, MPI_INT, 0, MPI_COMM_WORLD);
+
+        int recvCount = sendcounts[rank];
+        std::vector<float> recvbuf(recvCount, 0.0);
+
+        if (rank == 0){
+            A = createRandomMatrix(N, 123);
+            B = createRandomMatrix(N, 456);
+        }
+
+        strassen_mpi_wrapper(
+            N,
+            rank,
+            numProcs, 
+            sendcounts.data(),
+            displs.data(),
+            A.data(),
+            N,
+            B.data(),
+            N,
+            C.data(),
+            N,
+            recvCount,
+            recvbuf.data(),
+            &timer
+        );
+    }
+
+    if (rank == 0){
+        int check = std::atoi(argv[2]);
+        if (check == 1) {
+
+            std::vector<float> A, B;
+            A = createRandomMatrix(N, 123);
+            B = createRandomMatrix(N, 456);
+            std::vector<float> CC(N*N, 0.0f);
+            Timer naive_timer;
+            naive_timer.start();
+            naiveMultiply(N, A.data(), N, B.data(), N, CC.data(), N);
+            float naiveTime = naive_timer.elapse();
+            std::cout << "Naive completed in " << naiveTime << " seconds.\n";
+
+
+            float diff_sum = 0.0, ref_sum = 0.0;
+            for (int i = 0; i < N*N; ++i) {
+                float d = C[i] - CC[i];
+                diff_sum += d*d;
+                ref_sum += CC[i]*CC[i];
+            }
+            float rel_error = std::sqrt(diff_sum / (ref_sum + 1e-12));
+            std::cout << "Relative L2 error: " << rel_error << "\n";
+        }
+    }
+
+    MPI_Finalize();
     return 0;
 }
