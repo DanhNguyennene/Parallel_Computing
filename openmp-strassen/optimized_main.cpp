@@ -424,7 +424,7 @@ int main(int argc, char ** argv){
     std::cout << "\n================================================" << std::endl;
     std::cout << "Results:" << std::endl;
     std::cout << "================================================" << std::endl;
-    printResults(N, num_threads, threshold, max_depth, paddedSize, time, true);
+    printResults(N, num_threads, threshold, max_depth, paddedSize, time, false);
 
     if (check == 0){
         std::cout << "================================================" << std::endl;

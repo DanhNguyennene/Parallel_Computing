@@ -3,7 +3,7 @@
 
 # Compiler settings
 CXX = g++
-CXXFLAGS = -std=c++11 -O3 -fopenmp -Wall -Wextra
+CXXFLAGS = -std=c++11 -O3 -fopenmp -Wall -Wextra -march=native
 LDFLAGS = -fopenmp
 
 # Target executable
@@ -45,7 +45,7 @@ clean:
 # Test Case 1: Matrix sizes (100, 1000, 10000) as per assignment
 test-assignment-sizes: $(TARGET)
 	@echo "=========================================="
-	@echo "TEST CASE 1: Assignment Matrix Sizes"
+	@echo "TEST CASE: Assignment Matrix Sizes"
 	@echo "Testing: 100x100, 1000x1000, 10000x10000"
 	@echo "=========================================="
 	@echo ""
@@ -65,7 +65,7 @@ test-assignment-sizes: $(TARGET)
 # Test Case 2: Scalability Study - varying thread counts (strong scaling)
 test-scalability-100: $(TARGET)
 	@echo "=========================================="
-	@echo "TEST CASE 2A: Scalability Study - 100x100"
+	@echo "TEST CASE: Scalability Study - 100x100"
 	@echo "Strong Scaling (fixed problem size)"
 	@echo "=========================================="
 	@echo ""
@@ -77,7 +77,7 @@ test-scalability-100: $(TARGET)
 
 test-scalability-1000: $(TARGET)
 	@echo "=========================================="
-	@echo "TEST CASE 2B: Scalability Study - 1000x1000"
+	@echo "TEST CASE: Scalability Study - 1000x1000"
 	@echo "Strong Scaling (fixed problem size)"
 	@echo "=========================================="
 	@echo ""
@@ -89,7 +89,7 @@ test-scalability-1000: $(TARGET)
 
 test-scalability-10000: $(TARGET)
 	@echo "=========================================="
-	@echo "TEST CASE 2C: Scalability Study - 10000x10000"
+	@echo "TEST CASE: Scalability Study - 10000x10000"
 	@echo "Strong Scaling (fixed problem size)"
 	@echo "=========================================="
 	@echo ""
@@ -104,7 +104,7 @@ test-scalability-all: test-scalability-100 test-scalability-1000 test-scalabilit
 # Test Case 3: Threshold Optimization Study
 test-threshold-100: $(TARGET)
 	@echo "=========================================="
-	@echo "TEST CASE 3A: Threshold Study - 100x100"
+	@echo "TEST CASE: Threshold Study - 100x100"
 	@echo "Finding optimal base case size"
 	@echo "=========================================="
 	@echo ""
@@ -116,7 +116,7 @@ test-threshold-100: $(TARGET)
 
 test-threshold-1000: $(TARGET)
 	@echo "=========================================="
-	@echo "TEST CASE 3B: Threshold Study - 1000x1000"
+	@echo "TEST CASE: Threshold Study - 1000x1000"
 	@echo "Finding optimal base case size"
 	@echo "=========================================="
 	@echo ""
@@ -128,7 +128,7 @@ test-threshold-1000: $(TARGET)
 
 test-threshold-10000: $(TARGET)
 	@echo "=========================================="
-	@echo "TEST CASE 3C: Threshold Study - 10000x10000"
+	@echo "TEST CASE: Threshold Study - 10000x10000"
 	@echo "Finding optimal base case size"
 	@echo "=========================================="
 	@echo ""
@@ -143,7 +143,7 @@ test-threshold-all: test-threshold-100 test-threshold-1000 test-threshold-10000
 # Test Case 4: Correctness Verification for all sizes
 test-correctness: $(TARGET)
 	@echo "=========================================="
-	@echo "TEST CASE 4: Correctness Verification"
+	@echo "TEST CASE: Correctness Verification"
 	@echo "Verifying results against serial version"
 	@echo "=========================================="
 	@echo ""
@@ -160,64 +160,6 @@ test-correctness: $(TARGET)
 	./$(TARGET) 1000 1 8 128
 	@echo ""
 
-# Test Case 5: Power-of-2 vs Non-Power-of-2 Comparison
-test-power2-comparison: $(TARGET)
-	@echo "=========================================="
-	@echo "TEST CASE 5: Power-of-2 vs Non-Power-of-2"
-	@echo "Comparing optimal vs suboptimal sizes"
-	@echo "=========================================="
-	@echo ""
-	@echo "Non-Power-of-2: 100x100"
-	./$(TARGET) 100 0 8 64
-	@echo ""
-	@echo "Power-of-2: 128x128"
-	./$(TARGET) 128 0 8 64
-	@echo ""
-	@echo "Non-Power-of-2: 1000x1000"
-	./$(TARGET) 1000 0 8 128
-	@echo ""
-	@echo "Power-of-2: 1024x1024"
-	./$(TARGET) 1024 0 8 128
-	@echo ""
-	@echo "Non-Power-of-2: 10000x10000"
-	./$(TARGET) 10000 0 8 128
-	@echo ""
-	@echo "Power-of-2: 8192x8192"
-	./$(TARGET) 8192 0 8 128
-	@echo ""
-
-# Test Case 6: Performance across different matrix sizes
-test-performance-range: $(TARGET)
-	@echo "=========================================="
-	@echo "TEST CASE 6: Performance Across Size Range"
-	@echo "Testing multiple sizes for performance curve"
-	@echo "=========================================="
-	@echo ""
-	@for size in 100 200 500 1000 2000 5000 10000; do \
-		echo "Size: $$size x $$size"; \
-		./$(TARGET) $$size 0 8 128; \
-		echo ""; \
-	done
-
-# Test Case 7: Weak Scaling (problem size scales with threads)
-test-weak-scaling: $(TARGET)
-	@echo "=========================================="
-	@echo "TEST CASE 7: Weak Scaling Study"
-	@echo "Problem size increases with thread count"
-	@echo "=========================================="
-	@echo ""
-	@echo "1 thread, 512x512 matrix"
-	./$(TARGET) 512 0 1 128
-	@echo ""
-	@echo "2 threads, 724x724 matrix (≈√2 scaling)"
-	./$(TARGET) 724 0 2 128
-	@echo ""
-	@echo "4 threads, 1024x1024 matrix (2x scaling)"
-	./$(TARGET) 1024 0 4 128
-	@echo ""
-	@echo "8 threads, 1448x1448 matrix (≈2√2 scaling)"
-	./$(TARGET) 1448 0 8 128
-	@echo ""
 
 # Test Case 8: Comparing different thread configurations
 test-thread-configs: $(TARGET)
@@ -232,34 +174,6 @@ test-thread-configs: $(TARGET)
 		echo ""; \
 	done
 
-# Test Case 9: Threshold vs Size Interaction
-test-threshold-size-matrix: $(TARGET)
-	@echo "=========================================="
-	@echo "TEST CASE 9: Threshold-Size Interaction"
-	@echo "Testing different threshold-size combinations"
-	@echo "=========================================="
-	@echo ""
-	@echo "Small Matrix (100x100) with various thresholds:"
-	@echo "------------------------------------------"
-	@for thresh in 16 32 64 128; do \
-		echo "  Threshold: $$thresh"; \
-		./$(TARGET) 100 0 8 $$thresh; \
-	done
-	@echo ""
-	@echo "Medium Matrix (1000x1000) with various thresholds:"
-	@echo "------------------------------------------"
-	@for thresh in 32 64 128 256 512; do \
-		echo "  Threshold: $$thresh"; \
-		./$(TARGET) 1000 0 8 $$thresh; \
-	done
-	@echo ""
-	@echo "Large Matrix (5000x5000) with various thresholds:"
-	@echo "------------------------------------------"
-	@for thresh in 64 128 256 512 1024; do \
-		echo "  Threshold: $$thresh"; \
-		./$(TARGET) 5000 0 8 $$thresh; \
-	done
-	@echo ""
 
 # ==========================================
 # COMPREHENSIVE TEST SUITES
@@ -276,8 +190,6 @@ test-all: $(TARGET)
 	@make test-scalability-all
 	@make test-threshold-all
 	@make test-correctness
-	@make test-power2-comparison
-	@make test-performance-range
 
 # Quick test suite (essential tests only)
 test-quick: $(TARGET)
@@ -425,7 +337,6 @@ help:
 	@echo "  make test-scalability-all       - Thread scaling for all sizes (REQUIRED)"
 	@echo "  make test-threshold-all         - Threshold optimization (REQUIRED)"
 	@echo "  make test-correctness           - Verify results (REQUIRED)"
-	@echo "  make test-power2-comparison     - Compare power-of-2 vs non-power-of-2"
 	@echo ""
 	@echo "INDIVIDUAL TEST CASES:"
 	@echo "  make test-scalability-100       - Thread scaling for 100x100"
@@ -434,10 +345,7 @@ help:
 	@echo "  make test-threshold-100         - Threshold tuning for 100x100"
 	@echo "  make test-threshold-1000        - Threshold tuning for 1000x1000"
 	@echo "  make test-threshold-10000       - Threshold tuning for 10000x10000"
-	@echo "  make test-performance-range     - Performance across multiple sizes"
-	@echo "  make test-weak-scaling          - Weak scaling study"
 	@echo "  make test-thread-configs        - Various thread configurations"
-	@echo "  make test-threshold-size-matrix - Threshold-size interactions"
 	@echo ""
 	@echo "COMPREHENSIVE SUITES:"
 	@echo "  make test-all                   - Run ALL test cases"
@@ -478,7 +386,7 @@ help:
         test-scalability-1000 test-scalability-10000 test-scalability-all \
         test-threshold-100 test-threshold-1000 test-threshold-10000 \
         test-threshold-all test-correctness test-power2-comparison \
-        test-performance-range test-weak-scaling test-thread-configs \
-        test-threshold-size-matrix test-all test-quick test-report \
+        test-thread-configs \
+        test-all test-quick test-report \
         export-csv test-current-machine test-machine-1 test-machine-2 \
         test-machine-3 check-openmp info help
