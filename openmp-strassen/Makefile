@@ -10,7 +10,7 @@ LDFLAGS = -fopenmp
 TARGET = optimized_main
 
 # Source files
-SOURCES = optimized_main.cpp
+SOURCES = $(wildcard *.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
 # Test parameters (as per assignment requirements)

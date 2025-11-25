@@ -1,14 +1,15 @@
 CXX = mpicxx
 CXXFLAGS = -O2 -std=c++11
 TARGET = main
-SRC = main.cpp
+SOURCES := $(wildcard *.cpp)
+OBJECTS := $(SOURCES:.cpp=.o)
 N ?= 1000
-NP ?= 4
+NP ?= 8
 
 all: $(TARGET)
 
-$(TARGET): $(SRC)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SRC)
+$(TARGET): $(OBJECTS)
+	$(CXX) $(LDFLAGS) -o $@ $^
 
 run: $(TARGET)
 	mpirun -np $(NP) --use-hwthread-cpus ./$(TARGET) $(N)

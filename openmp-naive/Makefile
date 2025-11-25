@@ -1,7 +1,6 @@
 # Makefile for OpenMP Divide & Conquer Matrix Multiplication
 # Parallel Computing Assignment 1
 
-# Compiler settings
 CXX = g++
 CXXFLAGS = -std=c++11 -O3 -fopenmp -Wall -Wextra -march=native
 LDFLAGS = -fopenmp
@@ -9,14 +8,9 @@ LDFLAGS = -fopenmp
 # Target executable
 TARGET = main
 
-# Source files
-SOURCES = main.cpp
-OBJECTS = $(SOURCES:.cpp=.o)
-
-# Test parameters (as per assignment requirements)
-SIZES = 100 1000 10000
-THREADS = 1 2 4 8 16
-THRESHOLDS = 32 64 128 100
+# Source files: tous les .cpp du dossier
+SOURCES := $(wildcard *.cpp)
+OBJECTS := $(SOURCES:.cpp=.o)
 
 # Default target
 all: $(TARGET)
@@ -27,11 +21,19 @@ all: $(TARGET)
 
 # Build executable
 $(TARGET): $(OBJECTS)
-	$(CXX) $(LDFLAGS) -o $(TARGET) $(OBJECTS)
+	$(CXX) $(LDFLAGS) -o $@ $^
 
-# Compile source files
+# Compile each source file
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+
+# Test parameters (as per assignment requirements)
+SIZES = 100 1000 10000
+THREADS = 1 2 4 8 16
+THRESHOLDS = 32 64 128 100
+
+
 
 # Clean build files
 clean:
