@@ -1,42 +1,28 @@
 #!/bin/bash
 
 # ==============================================
-# MPI Testing Script for WireGuard Cluster
-# Network: 10.0.0.0/24 (2 nodes: 10.0.0.1, 10.0.0.2)
+# MPI Testing Script for HPCC Cluster
+# Network: 10.1.8.0/24
 # Clone repo: git clone https://github.com/DanhNguyennene/CO3067_251_Group_04.git
-# Supports both OpenMPI and MPICH
 # ==============================================
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
 # Use HOME directory - same on all nodes
-BASE_DIR="$HOME/mpi_cluster_para_assignment"
+BASE_DIR="$HOME/CO3067_251_Group_04"
 HOSTFILE="$BASE_DIR/hostfile"
 
 # Output directory INSIDE the repo so it gets saved
-OUTPUT_DIR="$BASE_DIR/results_MPI_WireGuard_${TIMESTAMP}"
-
-# Detect MPI implementation
-if mpirun --version 2>&1 | grep -q "Open MPI"; then
-    MPI_TYPE="openmpi"
-    MPI_OPTS="-hostfile $HOSTFILE --mca btl tcp,self --mca btl_tcp_if_include 10.0.0.0/24 --mca oob_tcp_if_include 10.0.0.0/24"
-else
-    MPI_TYPE="mpich"
-    # MPICH uses -f for hostfile and doesn't need mca options
-    MPI_OPTS="-f $HOSTFILE"
-fi
-
-echo "Detected MPI: $MPI_TYPE"
+OUTPUT_DIR="$BASE_DIR/results_MPI_HPCC_${TIMESTAMP}"
 
 mkdir -p "$OUTPUT_DIR"
 
 echo "=============================================="
-echo "MPI TESTS - WireGuard CLUSTER (10.0.0.0/24)"
+echo "MPI TESTS - DISTRIBUTED CLUSTER"
 echo "=============================================="
 echo "Date: $(date)"
 echo "Output: $OUTPUT_DIR"
 echo "Base Dir: $BASE_DIR"
-echo "MPI Type: $MPI_TYPE"
 echo "=============================================="
 
 # ==============================================
@@ -48,23 +34,20 @@ if [ "$1" == "--clean" ]; then
     echo "CLEANING ALL NODES"
     echo "=============================================="
     
-    # Read hostfile if exists
     if [ -f "$HOSTFILE" ]; then
-        NODES=$(grep -oE '10\.0\.0\.[0-9]+' "$HOSTFILE" | sort -u)
+        NODES=$(grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$HOSTFILE" | sort -u)
     else
-        # Default nodes
-        NODES="10.0.0.1 10.0.0.2"
+        NODES=""
     fi
     
     for node in $NODES; do
         echo -n "  Cleaning $node: "
         ssh -o BatchMode=yes -o ConnectTimeout=5 "$node" "
-            rm -rf ~/mpi_cluster_para_assignment
+            rm -rf ~/CO3067_251_Group_04
             echo 'done'
         " 2>/dev/null || echo "FAILED"
     done
     
-    # Clean local too
     echo -n "  Cleaning local: "
     rm -rf "$BASE_DIR"
     echo "done"
@@ -74,6 +57,7 @@ if [ "$1" == "--clean" ]; then
     exit 0
 fi
 
+# Check if repo exists, if not clone it
 if [ ! -d "$BASE_DIR" ]; then
     echo "Cloning repository..."
     cd "$HOME"
@@ -83,72 +67,119 @@ fi
 cd "$BASE_DIR"
 git pull origin main 2>/dev/null || true
 
-# Always recreate hostfile to ensure correct format for detected MPI type
-echo "Creating hostfile for $MPI_TYPE..."
-if [ "$MPI_TYPE" == "openmpi" ]; then
-    # OpenMPI format: hostname slots=N
-    cat > "$HOSTFILE" << 'EOF'
-10.0.0.1 slots=4
-10.0.0.2 slots=4
-EOF
-else
-    # MPICH format: hostname:num_procs
-    cat > "$HOSTFILE" << 'EOF'
-10.0.0.1:4
-10.0.0.2:4
-EOF
+# ==============================================
+# Create/check hostfile - OpenMPI format
+# ==============================================
+if [ ! -f "$HOSTFILE" ]; then
+    echo "ERROR: No hostfile found at $HOSTFILE"
+    echo "Please create a hostfile with format:"
+    echo "  hostname_or_ip slots=N"
+    echo ""
+    echo "Example:"
+    echo "  10.0.0.1 slots=4"
+    echo "  10.0.0.2 slots=4"
+    exit 1
 fi
 
 echo "Hostfile:"
 cat "$HOSTFILE"
 echo ""
 
-NODES=$(grep -oE '10\.0\.0\.[0-9]+' "$HOSTFILE" | sort -u)
-NODE_COUNT=$(echo "$NODES" | wc -l)
+NODES=$(grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$HOSTFILE" | sort -u)
+NODE_COUNT=$(echo "$NODES" | wc -w)
 echo "Found $NODE_COUNT nodes in hostfile"
 
+# ==============================================
+# Test SSH connectivity to all nodes
+# ==============================================
 echo ""
-echo "Setting up code on all nodes..."
+echo "Testing SSH connectivity..."
+REACHABLE_NODES=""
 for node in $NODES; do
     echo -n "  $node: "
-    ssh -o BatchMode=yes -o ConnectTimeout=5 "$node" "
-        rm -rf ~/CO3067_251_Group_04
-        cd \$HOME && git clone https://github.com/DanhNguyennene/CO3067_251_Group_04.git 2>/dev/null
-        echo 'fresh clone'
-    " 2>/dev/null || echo "FAILED (skipping)"
+    if ssh -o BatchMode=yes -o ConnectTimeout=5 "$node" "echo OK" 2>/dev/null; then
+        REACHABLE_NODES="$REACHABLE_NODES $node"
+    else
+        echo "FAILED - Check SSH keys and connectivity"
+    fi
 done
 echo ""
 
+REACHABLE_COUNT=$(echo $REACHABLE_NODES | wc -w)
+if [ "$REACHABLE_COUNT" -eq 0 ]; then
+    echo "ERROR: No nodes are reachable via SSH!"
+    echo ""
+    echo "To fix SSH connectivity:"
+    echo "  1. Generate SSH key if needed: ssh-keygen -t rsa"
+    echo "  2. Copy key to each node: ssh-copy-id user@10.0.0.X"
+    echo "  3. Test connection: ssh 10.0.0.X"
+    echo ""
+    echo "Running tests on LOCAL machine only..."
+    USE_HOSTFILE=false
+    MPI_OPTS="--oversubscribe"
+else
+    echo "$REACHABLE_COUNT nodes reachable"
+    USE_HOSTFILE=true
+    MPI_OPTS="--hostfile $HOSTFILE --mca btl tcp,self --mca btl_tcp_if_include 10.0.0.0/24"
+fi
+
+# ==============================================
+# Setup code on reachable nodes
+# ==============================================
+if [ "$USE_HOSTFILE" = true ]; then
+    echo ""
+    echo "Setting up code on reachable nodes..."
+    for node in $REACHABLE_NODES; do
+        echo -n "  $node: "
+        ssh -o BatchMode=yes -o ConnectTimeout=10 "$node" "
+            if [ ! -d ~/CO3067_251_Group_04 ]; then
+                cd \$HOME && git clone https://github.com/DanhNguyennene/CO3067_251_Group_04.git 2>/dev/null
+                echo 'cloned'
+            else
+                cd ~/CO3067_251_Group_04 && git pull origin main 2>/dev/null
+                echo 'updated'
+            fi
+        " 2>/dev/null || echo "FAILED"
+    done
+    echo ""
+fi
+
 # System Information
 {
-    echo "=== WireGuard CLUSTER SYSTEM INFORMATION ==="
+    echo "=== CLUSTER SYSTEM INFORMATION ==="
     echo "Master Hostname: $(hostname)"
     echo "Date: $(date)"
     echo "User: $(whoami)"
-    echo "Nodes: $NODE_COUNT"
+    echo "Nodes in hostfile: $NODE_COUNT"
+    echo "Reachable nodes: $REACHABLE_COUNT"
+    echo "Using hostfile: $USE_HOSTFILE"
     echo "Local CPU Cores: $(nproc)"
     echo "MPI Version:"
-    mpirun --version | head -2
+    mpirun --version 2>&1 | head -2
     echo ""
-    echo "Available Nodes:"
-    for node in $NODES; do
-        cores=$(ssh -o BatchMode=yes -o ConnectTimeout=3 "$node" "nproc" 2>/dev/null || echo "N/A")
-        echo "  $node: $cores cores"
-    done
+    if [ "$USE_HOSTFILE" = true ]; then
+        echo "Node Details:"
+        for node in $REACHABLE_NODES; do
+            cores=$(ssh -o BatchMode=yes -o ConnectTimeout=3 "$node" "nproc" 2>/dev/null || echo "N/A")
+            echo "  $node: $cores cores"
+        done
+    fi
     echo ""
 } | tee "$OUTPUT_DIR/system_info.txt"
 
 cd "$BASE_DIR"
 
-# Function to compile on all nodes
+# Function to compile on all reachable nodes
 compile_on_all_nodes() {
     local dir=$1
-    echo "Compiling $dir on all nodes..."
-    for node in $NODES; do
-        ssh -o BatchMode=yes -o ConnectTimeout=5 "$node" "cd $BASE_DIR/$dir && make clean && make" 2>&1 | tail -1 &
-    done
-    wait
-    echo "Compilation complete on all nodes"
+    if [ "$USE_HOSTFILE" = true ]; then
+        echo "Compiling $dir on all nodes..."
+        for node in $REACHABLE_NODES; do
+            ssh -o BatchMode=yes -o ConnectTimeout=10 "$node" "cd $BASE_DIR/$dir && make clean && make" 2>&1 | tail -1 &
+        done
+        wait
+        echo "Compilation complete on all nodes"
+    fi
 }
 
 # ==============================================
@@ -166,8 +197,9 @@ compile_on_all_nodes "mpi-naive"
 if [ -f ./mpi_program ]; then
     {
         echo "=== MPI Naive Results ==="
-        echo "Platform: WireGuard Cluster (10.0.0.0/24)"
+        echo "Platform: Distributed Cluster"
         echo "Date: $(date)"
+        echo "Using hostfile: $USE_HOSTFILE"
         echo ""
         
         for size in 100 1000 4000; do
@@ -210,11 +242,11 @@ compile_on_all_nodes "mpi-strassen"
 if [ -f ./mpi_program ]; then
     {
         echo "=== MPI Strassen Results ==="
-        echo "Platform: WireGuard Cluster (10.0.0.0/24)"
+        echo "Platform: Distributed Cluster"
         echo "Date: $(date)"
+        echo "Using hostfile: $USE_HOSTFILE"
         echo ""
         
-        # MPI Strassen requires exactly 7 processes (one for each of the 7 Strassen sub-problems)
         for size in 100 1000 4000; do
             echo "=========================================="
             echo "Matrix Size: ${size}x${size}"
@@ -250,32 +282,26 @@ compile_on_all_nodes "hybrid-strassen"
 if [ -f ./main ]; then
     {
         echo "=== Hybrid MPI+OpenMP Results ==="
-        echo "Platform: WireGuard Cluster (10.0.0.0/24)"
+        echo "Platform: Distributed Cluster"
         echo "Date: $(date)"
+        echo "Using hostfile: $USE_HOSTFILE"
         echo ""
         
-        # Hybrid Strassen requires exactly 7 MPI processes, but can vary OpenMP threads
         for size in 100 1000 4000; do
             echo "=========================================="
             echo "Matrix Size: ${size}x${size}"
             echo "=========================================="
             
-            # Test with 7 MPI processes and different OpenMP thread counts
             for threads in 1 2 4 8; do
                 echo ""
                 echo "--- Processes: 7, Threads: $threads ---"
                 
-                # Set OMP_NUM_THREADS - syntax differs between OpenMPI and MPICH
-                if [ "$MPI_TYPE" == "openmpi" ]; then
-                    ENV_OPT="-x OMP_NUM_THREADS=$threads"
-                else
-                    ENV_OPT="-env OMP_NUM_THREADS $threads"
-                fi
+                export OMP_NUM_THREADS=$threads
                 
                 if [ $size -le 1000 ]; then
-                    mpirun $MPI_OPTS -np 7 $ENV_OPT ./main $size 1 $threads 128
+                    mpirun $MPI_OPTS -np 7 -x OMP_NUM_THREADS=$threads ./main $size 1 $threads 128
                 else
-                    mpirun $MPI_OPTS -np 7 $ENV_OPT ./main $size 0 $threads 128
+                    mpirun $MPI_OPTS -np 7 -x OMP_NUM_THREADS=$threads ./main $size 0 $threads 128
                 fi
             done
             echo ""
@@ -292,9 +318,10 @@ echo ""
 echo "Generating summary..."
 
 {
-    echo "=== MPI BENCHMARK SUMMARY (WireGuard Cluster) ==="
+    echo "=== MPI BENCHMARK SUMMARY ==="
     echo "Date: $(date)"
-    echo "Nodes: $NODE_COUNT"
+    echo "Nodes: $NODE_COUNT (Reachable: $REACHABLE_COUNT)"
+    echo "Using hostfile: $USE_HOSTFILE"
     echo ""
     echo "--- MPI Naive ---"
     grep -E "(Matrix Size|Processes:|Total execution time|PASSED|FAILED)" "$OUTPUT_DIR/mpi_naive_results.txt" 2>/dev/null || echo "No results"
@@ -308,7 +335,7 @@ echo "Generating summary..."
 
 echo ""
 echo "=============================================="
-echo "WireGuard CLUSTER TESTING COMPLETE!"
+echo "CLUSTER TESTING COMPLETE!"
 echo "=============================================="
 echo "Results saved to: $OUTPUT_DIR/"
 ls -la "$OUTPUT_DIR/"
@@ -317,6 +344,5 @@ echo ""
 echo "To push results to GitHub, run:"
 echo "  cd $BASE_DIR"
 echo "  git add ."
-echo "  git commit -m 'WireGuard cluster results'"
+echo "  git commit -m 'Cluster results'"
 echo "  git push origin main"
-ls -la "$OUTPUT_DIR/"
