@@ -1,6 +1,6 @@
 === OpenMP Naive Results ===
 Machine: machine1
-Date: Fri Dec 12 02:07:27 PM +07 2025
+Date: Fri Dec 12 02:37:37 PM +07 2025
 
 ==========================================
 Matrix Size: 100x100
@@ -36,7 +36,7 @@ Serial verification time: 0.0001s
 Relative L2 error: 0.0000e+00
 ✓ PASSED - Results are correct!
 
-Speedup vs Serial: 0.92x
+Speedup vs Serial: 0.90x
 ================================================
 
 --- Threads: 2 ---
@@ -59,7 +59,7 @@ Starting Parallel Divide & Conquer...
 ================================================
 Results:
 ================================================
-Size: 100x100 | Threads: 2 | Threshold: 128 | Time: 0.0002s
+Size: 100x100 | Threads: 2 | Threshold: 128 | Time: 0.0001s
 
 ================================================
 Verifying Correctness...
@@ -69,7 +69,7 @@ Serial verification time: 0.0001s
 Relative L2 error: 0.0000e+00
 ✓ PASSED - Results are correct!
 
-Speedup vs Serial: 0.29x
+Speedup vs Serial: 0.77x
 ================================================
 
 --- Threads: 4 ---
@@ -102,7 +102,7 @@ Serial verification time: 0.0001s
 Relative L2 error: 0.0000e+00
 ✓ PASSED - Results are correct!
 
-Speedup vs Serial: 0.59x
+Speedup vs Serial: 0.65x
 ================================================
 
 --- Threads: 8 ---
@@ -135,7 +135,7 @@ Serial verification time: 0.0001s
 Relative L2 error: 0.0000e+00
 ✓ PASSED - Results are correct!
 
-Speedup vs Serial: 0.42x
+Speedup vs Serial: 0.43x
 ================================================
 
 --- Threads: 16 ---
@@ -168,7 +168,7 @@ Serial verification time: 0.0001s
 Relative L2 error: 0.0000e+00
 ✓ PASSED - Results are correct!
 
-Speedup vs Serial: 0.26x
+Speedup vs Serial: 0.28x
 ================================================
 
 ==========================================
@@ -195,17 +195,17 @@ Starting Parallel Divide & Conquer...
 ================================================
 Results:
 ================================================
-Size: 1000x1000 | Threads: 1 | Threshold: 128 | Time: 0.0689s
+Size: 1000x1000 | Threads: 1 | Threshold: 128 | Time: 0.0797s
 
 ================================================
 Verifying Correctness...
 ================================================
-Serial verification time: 0.0680s
+Serial verification time: 0.0672s
 
 Relative L2 error: 0.0000e+00
 ✓ PASSED - Results are correct!
 
-Speedup vs Serial: 0.99x
+Speedup vs Serial: 0.84x
 ================================================
 
 --- Threads: 2 ---
@@ -228,17 +228,17 @@ Starting Parallel Divide & Conquer...
 ================================================
 Results:
 ================================================
-Size: 1000x1000 | Threads: 2 | Threshold: 128 | Time: 0.0430s
+Size: 1000x1000 | Threads: 2 | Threshold: 128 | Time: 0.0355s
 
 ================================================
 Verifying Correctness...
 ================================================
-Serial verification time: 0.0692s
+Serial verification time: 0.0676s
 
 Relative L2 error: 0.0000e+00
 ✓ PASSED - Results are correct!
 
-Speedup vs Serial: 1.61x
+Speedup vs Serial: 1.91x
 ================================================
 
 --- Threads: 4 ---
@@ -261,17 +261,17 @@ Starting Parallel Divide & Conquer...
 ================================================
 Results:
 ================================================
-Size: 1000x1000 | Threads: 4 | Threshold: 128 | Time: 0.0281s
+Size: 1000x1000 | Threads: 4 | Threshold: 128 | Time: 0.0204s
 
 ================================================
 Verifying Correctness...
 ================================================
-Serial verification time: 0.0700s
+Serial verification time: 0.0674s
 
 Relative L2 error: 0.0000e+00
 ✓ PASSED - Results are correct!
 
-Speedup vs Serial: 2.49x
+Speedup vs Serial: 3.30x
 ================================================
 
 --- Threads: 8 ---
@@ -294,17 +294,17 @@ Starting Parallel Divide & Conquer...
 ================================================
 Results:
 ================================================
-Size: 1000x1000 | Threads: 8 | Threshold: 128 | Time: 0.0246s
+Size: 1000x1000 | Threads: 8 | Threshold: 128 | Time: 0.0204s
 
 ================================================
 Verifying Correctness...
 ================================================
-Serial verification time: 0.0691s
+Serial verification time: 0.0679s
 
 Relative L2 error: 0.0000e+00
 ✓ PASSED - Results are correct!
 
-Speedup vs Serial: 2.80x
+Speedup vs Serial: 3.33x
 ================================================
 
 --- Threads: 16 ---
@@ -327,17 +327,17 @@ Starting Parallel Divide & Conquer...
 ================================================
 Results:
 ================================================
-Size: 1000x1000 | Threads: 16 | Threshold: 128 | Time: 0.0106s
+Size: 1000x1000 | Threads: 16 | Threshold: 128 | Time: 0.0107s
 
 ================================================
 Verifying Correctness...
 ================================================
-Serial verification time: 0.0693s
+Serial verification time: 0.0674s
 
 Relative L2 error: 0.0000e+00
 ✓ PASSED - Results are correct!
 
-Speedup vs Serial: 6.52x
+Speedup vs Serial: 6.32x
 ================================================
 
 ==========================================
@@ -364,7 +364,7 @@ Starting Parallel Divide & Conquer...
 ================================================
 Results:
 ================================================
-Size: 10000x10000 | Threads: 1 | Threshold: 128 | Time: 64.8982s
+Size: 10000x10000 | Threads: 1 | Threshold: 128 | Time: 64.6434s
 ================================================
 
 --- Threads: 2 ---
@@ -387,7 +387,7 @@ Starting Parallel Divide & Conquer...
 ================================================
 Results:
 ================================================
-Size: 10000x10000 | Threads: 2 | Threshold: 128 | Time: 33.1271s
+Size: 10000x10000 | Threads: 2 | Threshold: 128 | Time: 32.6183s
 ================================================
 
 --- Threads: 4 ---
@@ -410,7 +410,7 @@ Starting Parallel Divide & Conquer...
 ================================================
 Results:
 ================================================
-Size: 10000x10000 | Threads: 4 | Threshold: 128 | Time: 16.4866s
+Size: 10000x10000 | Threads: 4 | Threshold: 128 | Time: 16.1950s
 ================================================
 
 --- Threads: 8 ---
@@ -433,7 +433,7 @@ Starting Parallel Divide & Conquer...
 ================================================
 Results:
 ================================================
-Size: 10000x10000 | Threads: 8 | Threshold: 128 | Time: 10.2639s
+Size: 10000x10000 | Threads: 8 | Threshold: 128 | Time: 9.7749s
 ================================================
 
 --- Threads: 16 ---
@@ -456,6 +456,6 @@ Starting Parallel Divide & Conquer...
 ================================================
 Results:
 ================================================
-Size: 10000x10000 | Threads: 16 | Threshold: 128 | Time: 8.6780s
+Size: 10000x10000 | Threads: 16 | Threshold: 128 | Time: 8.3111s
 ================================================
 
