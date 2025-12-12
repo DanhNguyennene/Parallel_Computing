@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # ==============================================
-# MPI Testing Script for HPCC Cluster
-# Network: 10.1.8.0/24
+# MPI Testing Script for WireGuard Cluster
+# Network: 10.0.0.0/24 (2 nodes: 10.0.0.1, 10.0.0.2)
 # Clone repo: git clone https://github.com/DanhNguyennene/CO3067_251_Group_04.git
 # Supports both OpenMPI and MPICH
 # ==============================================
@@ -10,16 +10,16 @@
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
 # Use HOME directory - same on all nodes
-BASE_DIR="$HOME/CO3067_251_Group_04"
+BASE_DIR="$HOME/mpi_cluster_para_assignment"
 HOSTFILE="$BASE_DIR/hostfile"
 
 # Output directory INSIDE the repo so it gets saved
-OUTPUT_DIR="$BASE_DIR/results_MPI_HPCC_${TIMESTAMP}"
+OUTPUT_DIR="$BASE_DIR/results_MPI_WireGuard_${TIMESTAMP}"
 
 # Detect MPI implementation
 if mpirun --version 2>&1 | grep -q "Open MPI"; then
     MPI_TYPE="openmpi"
-    MPI_OPTS="-hostfile $HOSTFILE --mca btl tcp,self --mca btl_tcp_if_include 10.1.8.0/24 --mca oob_tcp_if_include 10.1.8.0/24"
+    MPI_OPTS="-hostfile $HOSTFILE --mca btl tcp,self --mca btl_tcp_if_include 10.0.0.0/24 --mca oob_tcp_if_include 10.0.0.0/24"
 else
     MPI_TYPE="mpich"
     # MPICH uses -f for hostfile and doesn't need mca options
@@ -31,7 +31,7 @@ echo "Detected MPI: $MPI_TYPE"
 mkdir -p "$OUTPUT_DIR"
 
 echo "=============================================="
-echo "MPI TESTS - HPCC CLUSTER (10.1.8.0/24)"
+echo "MPI TESTS - WireGuard CLUSTER (10.0.0.0/24)"
 echo "=============================================="
 echo "Date: $(date)"
 echo "Output: $OUTPUT_DIR"
@@ -50,16 +50,16 @@ if [ "$1" == "--clean" ]; then
     
     # Read hostfile if exists
     if [ -f "$HOSTFILE" ]; then
-        NODES=$(grep -oE '10\.1\.8\.[0-9]+' "$HOSTFILE" | sort -u)
+        NODES=$(grep -oE '10\.0\.0\.[0-9]+' "$HOSTFILE" | sort -u)
     else
         # Default nodes
-        NODES="10.1.8.71 10.1.8.72 10.1.8.73 10.1.8.74 10.1.8.75 10.1.8.76 10.1.8.77 10.1.8.78 10.1.8.79 10.1.8.80"
+        NODES="10.0.0.1 10.0.0.2"
     fi
     
     for node in $NODES; do
         echo -n "  Cleaning $node: "
         ssh -o BatchMode=yes -o ConnectTimeout=5 "$node" "
-            rm -rf ~/CO3067_251_Group_04
+            rm -rf ~/mpi_cluster_para_assignment
             echo 'done'
         " 2>/dev/null || echo "FAILED"
     done
@@ -74,7 +74,6 @@ if [ "$1" == "--clean" ]; then
     exit 0
 fi
 
-# Check if repo exists, if not clone it
 if [ ! -d "$BASE_DIR" ]; then
     echo "Cloning repository..."
     cd "$HOME"
@@ -89,30 +88,14 @@ echo "Creating hostfile for $MPI_TYPE..."
 if [ "$MPI_TYPE" == "openmpi" ]; then
     # OpenMPI format: hostname slots=N
     cat > "$HOSTFILE" << 'EOF'
-10.1.8.71 slots=4
-10.1.8.72 slots=4
-10.1.8.73 slots=4
-10.1.8.74 slots=4
-10.1.8.75 slots=4
-10.1.8.76 slots=4
-10.1.8.77 slots=4
-10.1.8.78 slots=4
-10.1.8.79 slots=4
-10.1.8.80 slots=4
+10.0.0.1 slots=4
+10.0.0.2 slots=4
 EOF
 else
     # MPICH format: hostname:num_procs
     cat > "$HOSTFILE" << 'EOF'
-10.1.8.71:4
-10.1.8.72:4
-10.1.8.73:4
-10.1.8.74:4
-10.1.8.75:4
-10.1.8.76:4
-10.1.8.77:4
-10.1.8.78:4
-10.1.8.79:4
-10.1.8.80:4
+10.0.0.1:4
+10.0.0.2:4
 EOF
 fi
 
@@ -120,7 +103,7 @@ echo "Hostfile:"
 cat "$HOSTFILE"
 echo ""
 
-NODES=$(grep -oE '10\.1\.8\.[0-9]+' "$HOSTFILE" | sort -u)
+NODES=$(grep -oE '10\.0\.0\.[0-9]+' "$HOSTFILE" | sort -u)
 NODE_COUNT=$(echo "$NODES" | wc -l)
 echo "Found $NODE_COUNT nodes in hostfile"
 
@@ -138,7 +121,7 @@ echo ""
 
 # System Information
 {
-    echo "=== HPCC CLUSTER SYSTEM INFORMATION ==="
+    echo "=== WireGuard CLUSTER SYSTEM INFORMATION ==="
     echo "Master Hostname: $(hostname)"
     echo "Date: $(date)"
     echo "User: $(whoami)"
@@ -183,7 +166,7 @@ compile_on_all_nodes "mpi-naive"
 if [ -f ./mpi_program ]; then
     {
         echo "=== MPI Naive Results ==="
-        echo "Platform: HPCC Cluster (10.1.8.0/24)"
+        echo "Platform: WireGuard Cluster (10.0.0.0/24)"
         echo "Date: $(date)"
         echo ""
         
@@ -227,7 +210,7 @@ compile_on_all_nodes "mpi-strassen"
 if [ -f ./mpi_program ]; then
     {
         echo "=== MPI Strassen Results ==="
-        echo "Platform: HPCC Cluster (10.1.8.0/24)"
+        echo "Platform: WireGuard Cluster (10.0.0.0/24)"
         echo "Date: $(date)"
         echo ""
         
@@ -267,7 +250,7 @@ compile_on_all_nodes "hybrid-strassen"
 if [ -f ./main ]; then
     {
         echo "=== Hybrid MPI+OpenMP Results ==="
-        echo "Platform: HPCC Cluster (10.1.8.0/24)"
+        echo "Platform: WireGuard Cluster (10.0.0.0/24)"
         echo "Date: $(date)"
         echo ""
         
@@ -309,7 +292,7 @@ echo ""
 echo "Generating summary..."
 
 {
-    echo "=== MPI BENCHMARK SUMMARY (HPCC Cluster) ==="
+    echo "=== MPI BENCHMARK SUMMARY (WireGuard Cluster) ==="
     echo "Date: $(date)"
     echo "Nodes: $NODE_COUNT"
     echo ""
@@ -325,7 +308,7 @@ echo "Generating summary..."
 
 echo ""
 echo "=============================================="
-echo "HPCC CLUSTER TESTING COMPLETE!"
+echo "WireGuard CLUSTER TESTING COMPLETE!"
 echo "=============================================="
 echo "Results saved to: $OUTPUT_DIR/"
 ls -la "$OUTPUT_DIR/"
@@ -334,6 +317,6 @@ echo ""
 echo "To push results to GitHub, run:"
 echo "  cd $BASE_DIR"
 echo "  git add ."
-echo "  git commit -m 'HPCC cluster results'"
+echo "  git commit -m 'WireGuard cluster results'"
 echo "  git push origin main"
 ls -la "$OUTPUT_DIR/"
