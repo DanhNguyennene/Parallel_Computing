@@ -84,11 +84,11 @@ fi
 cd "$BASE_DIR"
 git pull origin main 2>/dev/null || true
 
-if [ ! -f "$HOSTFILE" ] || [ "$1" == "--refresh-hosts" ]; then
-    echo "Creating hostfile for $MPI_TYPE..."
-    if [ "$MPI_TYPE" == "openmpi" ]; then
-        # OpenMPI format: hostname slots=N
-        cat > "$HOSTFILE" << 'EOF'
+# Always recreate hostfile to ensure correct format for detected MPI type
+echo "Creating hostfile for $MPI_TYPE..."
+if [ "$MPI_TYPE" == "openmpi" ]; then
+    # OpenMPI format: hostname slots=N
+    cat > "$HOSTFILE" << 'EOF'
 10.1.8.71 slots=4
 10.1.8.72 slots=4
 10.1.8.73 slots=4
@@ -100,9 +100,9 @@ if [ ! -f "$HOSTFILE" ] || [ "$1" == "--refresh-hosts" ]; then
 10.1.8.79 slots=4
 10.1.8.80 slots=4
 EOF
-    else
-        # MPICH format: just hostnames, one per line (repeat for multiple slots)
-        cat > "$HOSTFILE" << 'EOF'
+else
+    # MPICH format: hostname:num_procs
+    cat > "$HOSTFILE" << 'EOF'
 10.1.8.71:4
 10.1.8.72:4
 10.1.8.73:4
@@ -114,7 +114,6 @@ EOF
 10.1.8.79:4
 10.1.8.80:4
 EOF
-    fi
 fi
 
 echo "Hostfile:"
