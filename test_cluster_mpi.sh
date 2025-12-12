@@ -1,19 +1,24 @@
 #!/bin/bash
 
 # ==============================================
-# MPI Testing Script for HPCC Cluster
-# Network: 10.1.8.0/24
+# MPI Testing Script for WireGuard Cluster
+# Network: 10.0.0.0/24 (2 nodes with different usernames)
+#   - 10.0.0.1: user danhvuive
+#   - 10.0.0.2: user danhbuonba
 # Clone repo: git clone https://github.com/DanhNguyennene/CO3067_251_Group_04.git
 # ==============================================
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
-# Use HOME directory - same on all nodes
+# Local paths (on this machine)
 BASE_DIR="$HOME/CO3067_251_Group_04"
 HOSTFILE="$BASE_DIR/hostfile"
 
+# Remote path - use ~ which expands to remote user's home on each node
+REMOTE_REPO_DIR="~/CO3067_251_Group_04"
+
 # Output directory INSIDE the repo so it gets saved
-OUTPUT_DIR="$BASE_DIR/results_MPI_HPCC_${TIMESTAMP}"
+OUTPUT_DIR="$BASE_DIR/results_MPI_WireGuard_${TIMESTAMP}"
 
 mkdir -p "$OUTPUT_DIR"
 
@@ -35,14 +40,14 @@ if [ "$1" == "--clean" ]; then
     echo "=============================================="
     
     if [ -f "$HOSTFILE" ]; then
-        NODES=$(grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$HOSTFILE" | sort -u)
+        NODES_WITH_USER=$(grep -oE '[a-zA-Z0-9_]+@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$HOSTFILE" | sort -u)
     else
-        NODES=""
+        NODES_WITH_USER="danhvuive@10.0.0.1 danhbuonba@10.0.0.2"
     fi
     
-    for node in $NODES; do
-        echo -n "  Cleaning $node: "
-        ssh -o BatchMode=yes -o ConnectTimeout=5 "$node" "
+    for node_with_user in $NODES_WITH_USER; do
+        echo -n "  Cleaning $node_with_user: "
+        ssh -o BatchMode=yes -o ConnectTimeout=5 "$node_with_user" "
             rm -rf ~/CO3067_251_Group_04
             echo 'done'
         " 2>/dev/null || echo "FAILED"
@@ -68,23 +73,22 @@ cd "$BASE_DIR"
 git pull origin main 2>/dev/null || true
 
 # ==============================================
-# Create/check hostfile - OpenMPI format
+# Create/check hostfile - OpenMPI format with user@host
 # ==============================================
 if [ ! -f "$HOSTFILE" ]; then
-    echo "ERROR: No hostfile found at $HOSTFILE"
-    echo "Please create a hostfile with format:"
-    echo "  hostname_or_ip slots=N"
-    echo ""
-    echo "Example:"
-    echo "  10.0.0.1 slots=4"
-    echo "  10.0.0.2 slots=4"
-    exit 1
+    echo "Creating hostfile with user mappings..."
+    cat > "$HOSTFILE" << 'EOF'
+danhvuive@10.0.0.1 slots=4
+danhbuonba@10.0.0.2 slots=4
+EOF
 fi
 
 echo "Hostfile:"
 cat "$HOSTFILE"
 echo ""
 
+# Extract just IPs for connectivity testing, and full user@host for MPI
+NODES_WITH_USER=$(grep -oE '[a-zA-Z0-9_]+@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$HOSTFILE" | sort -u)
 NODES=$(grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$HOSTFILE" | sort -u)
 NODE_COUNT=$(echo "$NODES" | wc -w)
 echo "Found $NODE_COUNT nodes in hostfile"
@@ -95,10 +99,13 @@ echo "Found $NODE_COUNT nodes in hostfile"
 echo ""
 echo "Testing SSH connectivity..."
 REACHABLE_NODES=""
-for node in $NODES; do
-    echo -n "  $node: "
-    if ssh -o BatchMode=yes -o ConnectTimeout=5 "$node" "echo OK" 2>/dev/null; then
+REACHABLE_NODES_WITH_USER=""
+for node_with_user in $NODES_WITH_USER; do
+    node=$(echo "$node_with_user" | cut -d'@' -f2)
+    echo -n "  $node_with_user: "
+    if ssh -o BatchMode=yes -o ConnectTimeout=5 "$node_with_user" "echo OK" 2>/dev/null; then
         REACHABLE_NODES="$REACHABLE_NODES $node"
+        REACHABLE_NODES_WITH_USER="$REACHABLE_NODES_WITH_USER $node_with_user"
     else
         echo "FAILED - Check SSH keys and connectivity"
     fi
@@ -111,8 +118,9 @@ if [ "$REACHABLE_COUNT" -eq 0 ]; then
     echo ""
     echo "To fix SSH connectivity:"
     echo "  1. Generate SSH key if needed: ssh-keygen -t rsa"
-    echo "  2. Copy key to each node: ssh-copy-id user@10.0.0.X"
-    echo "  3. Test connection: ssh 10.0.0.X"
+    echo "  2. Copy key to each node: ssh-copy-id danhvuive@10.0.0.1"
+    echo "                           ssh-copy-id danhbuonba@10.0.0.2"
+    echo "  3. Test connection: ssh danhvuive@10.0.0.1"
     echo ""
     echo "Running tests on LOCAL machine only..."
     USE_HOSTFILE=false
@@ -120,7 +128,7 @@ if [ "$REACHABLE_COUNT" -eq 0 ]; then
 else
     echo "$REACHABLE_COUNT nodes reachable"
     USE_HOSTFILE=true
-    MPI_OPTS="--hostfile $HOSTFILE --mca btl tcp,self --mca btl_tcp_if_include 10.0.0.0/24"
+    MPI_OPTS="--hostfile $HOSTFILE --mca btl tcp,self --mca btl_tcp_if_include 10.0.0.0/24 --mca oob_tcp_if_include 10.0.0.0/24"
 fi
 
 # ==============================================
@@ -129,9 +137,9 @@ fi
 if [ "$USE_HOSTFILE" = true ]; then
     echo ""
     echo "Setting up code on reachable nodes..."
-    for node in $REACHABLE_NODES; do
-        echo -n "  $node: "
-        ssh -o BatchMode=yes -o ConnectTimeout=10 "$node" "
+    for node_with_user in $REACHABLE_NODES_WITH_USER; do
+        echo -n "  $node_with_user: "
+        ssh -o BatchMode=yes -o ConnectTimeout=10 "$node_with_user" "
             if [ ! -d ~/CO3067_251_Group_04 ]; then
                 cd \$HOME && git clone https://github.com/DanhNguyennene/CO3067_251_Group_04.git 2>/dev/null
                 echo 'cloned'
@@ -159,9 +167,9 @@ fi
     echo ""
     if [ "$USE_HOSTFILE" = true ]; then
         echo "Node Details:"
-        for node in $REACHABLE_NODES; do
-            cores=$(ssh -o BatchMode=yes -o ConnectTimeout=3 "$node" "nproc" 2>/dev/null || echo "N/A")
-            echo "  $node: $cores cores"
+        for node_with_user in $REACHABLE_NODES_WITH_USER; do
+            cores=$(ssh -o BatchMode=yes -o ConnectTimeout=3 "$node_with_user" "nproc" 2>/dev/null || echo "N/A")
+            echo "  $node_with_user: $cores cores"
         done
     fi
     echo ""
@@ -174,8 +182,9 @@ compile_on_all_nodes() {
     local dir=$1
     if [ "$USE_HOSTFILE" = true ]; then
         echo "Compiling $dir on all nodes..."
-        for node in $REACHABLE_NODES; do
-            ssh -o BatchMode=yes -o ConnectTimeout=10 "$node" "cd $BASE_DIR/$dir && make clean && make" 2>&1 | tail -1 &
+        for node_with_user in $REACHABLE_NODES_WITH_USER; do
+            # Use ~ which expands to remote user's home directory
+            ssh -o BatchMode=yes -o ConnectTimeout=10 "$node_with_user" "cd ~/CO3067_251_Group_04/$dir && make clean && make" 2>&1 | tail -1 &
         done
         wait
         echo "Compilation complete on all nodes"
