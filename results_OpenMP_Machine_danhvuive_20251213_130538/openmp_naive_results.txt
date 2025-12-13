@@ -1,0 +1,107 @@
+=== OpenMP Naive ===
+Size: 100x100
+Threads: 1
+
+Total execution time: 6.9148e-05 seconds
+
+Verifying Correctness...
+Serial verification time: 5.353e-05s
+✓ PASSED
+Speedup vs Serial: 0.77x
+Threads: 2
+
+Total execution time: 0.000180928 seconds
+
+Verifying Correctness...
+Serial verification time: 0.000115708s
+✓ PASSED
+Speedup vs Serial: 0.64x
+Threads: 4
+
+Total execution time: 0.000174475 seconds
+
+Verifying Correctness...
+Serial verification time: 0.000114465s
+✓ PASSED
+Speedup vs Serial: 0.66x
+Threads: 8
+
+Total execution time: 0.000257902 seconds
+
+Verifying Correctness...
+Serial verification time: 0.0001139s
+✓ PASSED
+Speedup vs Serial: 0.44x
+Threads: 16
+
+Total execution time: 0.000396507 seconds
+
+Verifying Correctness...
+Serial verification time: 0.000114591s
+✓ PASSED
+Speedup vs Serial: 0.29x
+Size: 1000x1000
+Threads: 1
+
+Total execution time: 0.0692568 seconds
+
+Verifying Correctness...
+Serial verification time: 0.0686315s
+✓ PASSED
+Speedup vs Serial: 0.99x
+Threads: 2
+
+Total execution time: 0.0379914 seconds
+
+Verifying Correctness...
+Serial verification time: 0.0673819s
+✓ PASSED
+Speedup vs Serial: 1.77x
+Threads: 4
+
+Total execution time: 0.0229472 seconds
+
+Verifying Correctness...
+Serial verification time: 0.0682971s
+✓ PASSED
+Speedup vs Serial: 2.98x
+Threads: 8
+
+Total execution time: 0.0139708 seconds
+
+Verifying Correctness...
+Serial verification time: 0.067915s
+✓ PASSED
+Speedup vs Serial: 4.86x
+Threads: 16
+
+Total execution time: 0.013811 seconds
+
+Verifying Correctness...
+Serial verification time: 0.0678673s
+✓ PASSED
+Speedup vs Serial: 4.91x
+Size: 10000x10000
+Threads: 1
+
+Total execution time: 76.1964 seconds
+Threads: 2
+
+Total execution time: 37.7257 seconds
+Threads: 4
+
+Total execution time: 18.9551 seconds
+Threads: 8
+
+Total execution time: 11.3347 seconds
+Threads: 16
+
+Total execution time: 7.7183 seconds
+
+=== Testing Recursive Blocked Method ===
+Threads: 4, Block: 128
+
+Total execution time: 0.0217441 seconds
+Threads: 8, Block: 128
+
+Total execution time: 0.019543 seconds

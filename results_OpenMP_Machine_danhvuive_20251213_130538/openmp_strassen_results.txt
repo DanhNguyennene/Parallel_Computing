@@ -2,123 +2,123 @@
 Size: 100x100
 Threads: 7
 
-Total execution time: 0.00146536 seconds
+Total execution time: 0.00150704 seconds
 
-Total execution time: 0.00146536 seconds
+Total execution time: 0.00150704 seconds
 
 Verifying Correctness...
-Serial verification time: 5.1131e-05s
+Serial verification time: 9.7105e-05s
 ✓ PASSED
-Speedup vs Serial: 0.03x
+Speedup vs Serial: 0.06x
 Threads: 14
 
-Total execution time: 0.00238485 seconds
+Total execution time: 0.00176721 seconds
 
-Total execution time: 0.00238485 seconds
+Total execution time: 0.00176721 seconds
 
 Verifying Correctness...
-Serial verification time: 6.8781e-05s
+Serial verification time: 9.778e-05s
 ✓ PASSED
-Speedup vs Serial: 0.03x
+Speedup vs Serial: 0.06x
 Threads: 21
 
-Total execution time: 0.00495774 seconds
+Total execution time: 0.00161086 seconds
 
-Total execution time: 0.00495774 seconds
+Total execution time: 0.00161086 seconds
 
 Verifying Correctness...
-Serial verification time: 0.000226242s
+Serial verification time: 4.689e-05s
 ✓ PASSED
-Speedup vs Serial: 0.05x
+Speedup vs Serial: 0.03x
 Threads: 28
 
-Total execution time: 0.00386893 seconds
+Total execution time: 0.00177765 seconds
 
-Total execution time: 0.00386893 seconds
+Total execution time: 0.00177765 seconds
 
 Verifying Correctness...
-Serial verification time: 0.000517502s
+Serial verification time: 4.6197e-05s
 ✓ PASSED
-Speedup vs Serial: 0.13x
+Speedup vs Serial: 0.03x
 Size: 1000x1000
 Threads: 7
 
-Total execution time: 0.0362987 seconds
+Total execution time: 0.0330678 seconds
 
-Total execution time: 0.0362987 seconds
+Total execution time: 0.0330678 seconds
 
 Verifying Correctness...
-Serial verification time: 0.0702762s
+Serial verification time: 0.067765s
   Error at (0,1): got 251.847, expected 251.845
   Error at (0,2): got 246.979, expected 246.978
   Error at (0,6): got 243.514, expected 243.515
   Error at (0,22): got 244.429, expected 244.43
   Error at (0,33): got 236.029, expected 236.03
 ✓ PASSED
-Speedup vs Serial: 1.94x
+Speedup vs Serial: 2.05x
 Threads: 14
 
-Total execution time: 0.0172939 seconds
+Total execution time: 0.0205355 seconds
 
-Total execution time: 0.0172939 seconds
+Total execution time: 0.0205355 seconds
 
 Verifying Correctness...
-Serial verification time: 0.0696828s
+Serial verification time: 0.0655608s
   Error at (0,1): got 251.847, expected 251.845
   Error at (0,2): got 246.979, expected 246.978
   Error at (0,6): got 243.514, expected 243.515
   Error at (0,22): got 244.429, expected 244.43
   Error at (0,33): got 236.029, expected 236.03
 ✓ PASSED
-Speedup vs Serial: 4.03x
+Speedup vs Serial: 3.19x
 Threads: 21
 
-Total execution time: 0.0154182 seconds
+Total execution time: 0.0157766 seconds
 
-Total execution time: 0.0154182 seconds
+Total execution time: 0.0157766 seconds
 
 Verifying Correctness...
-Serial verification time: 0.0630527s
+Serial verification time: 0.06992s
   Error at (0,1): got 251.847, expected 251.845
   Error at (0,2): got 246.979, expected 246.978
   Error at (0,6): got 243.514, expected 243.515
   Error at (0,22): got 244.429, expected 244.43
   Error at (0,33): got 236.029, expected 236.03
 ✓ PASSED
-Speedup vs Serial: 4.09x
+Speedup vs Serial: 4.43x
 Threads: 28
 
-Total execution time: 0.0188239 seconds
+Total execution time: 0.0198723 seconds
 
-Total execution time: 0.0188239 seconds
+Total execution time: 0.0198723 seconds
 
 Verifying Correctness...
-Serial verification time: 0.0683881s
+Serial verification time: 0.0684811s
   Error at (0,1): got 251.847, expected 251.845
   Error at (0,2): got 246.979, expected 246.978
   Error at (0,6): got 243.514, expected 243.515
   Error at (0,22): got 244.429, expected 244.43
   Error at (0,33): got 236.029, expected 236.03
 ✓ PASSED
-Speedup vs Serial: 3.63x
+Speedup vs Serial: 3.45x
 Size: 10000x10000
 Threads: 7
 
-Total execution time: 6.05597 seconds
+Total execution time: 6.09064 seconds
 
-Total execution time: 6.05597 seconds
+Total execution time: 6.09064 seconds
 Threads: 14
 
-Total execution time: 4.71159 seconds
+Total execution time: 4.71316 seconds
 
-Total execution time: 4.71159 seconds
+Total execution time: 4.71316 seconds
 Threads: 21
 
-Total execution time: 4.7003 seconds
+Total execution time: 4.72893 seconds
 
-Total execution time: 4.7003 seconds
+Total execution time: 4.72893 seconds
 Threads: 28
 
-Total execution time: 4.81302 seconds
+Total execution time: 4.77909 seconds
 
-Total execution time: 4.81302 seconds
+Total execution time: 4.77909 seconds
