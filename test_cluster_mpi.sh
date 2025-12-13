@@ -104,6 +104,12 @@ if [ -f ./mpi_program ]; then
                 fi
             done
         done
+        echo ""
+        echo "=== Testing Cannon Algorithm ==="
+        for procs in 4 9 16; do
+            echo "Procs: $procs (sqrt: $(echo "sqrt($procs)" | bc))"
+            mpirun $MPI_OPTS -np $procs ./mpi_program 1000 0
+        done
     } 2>&1 | tee "$OUTPUT_DIR/mpi_naive_results.txt"
 fi
 
@@ -134,7 +140,7 @@ if [ -f ./main ]; then
         echo "=== Hybrid MPI+OpenMP ==="
         for size in 100 1000 4000; do
             echo "Size: ${size}x${size}"
-            for threads in 1 2 4 8; do
+            for threads in 1 2 4 7; do
                 echo "Procs: 7, Threads: $threads"
                 export OMP_NUM_THREADS=$threads
                 if [ $size -le 1000 ]; then

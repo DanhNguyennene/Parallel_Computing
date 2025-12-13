@@ -33,6 +33,12 @@ if [ $? -eq 0 ]; then
                 fi
             done
         done
+        echo ""
+        echo "=== Testing Tiled Method ==="
+        for tile in 32 64 128 256; do
+            echo "Tile size: $tile"
+            ./main 1000 0 4 $tile
+        done
     } 2>&1 | tee "../$OUTPUT_DIR/openmp_naive_results.txt"
 fi
 
@@ -46,7 +52,7 @@ if [ $? -eq 0 ]; then
         echo "=== OpenMP Strassen ==="
         for size in 100 1000 10000; do
             echo "Size: ${size}x${size}"
-            for threads in 1 2 4 8 16; do
+            for threads in 7 14 21 28; do
                 echo "Threads: $threads"
                 if [ $size -le 1000 ]; then
                     ./optimized_main $size 1 $threads 128
