@@ -24,11 +24,9 @@ int main(int argc, char **argv)
     Timer t;
     t.start();
 
-    parallelDCMatMul(N, A, B, C, num_threads, block_size);
+    blockCyclicMatMul(N, A.data(), B.data(), C.data(), num_threads, block_size);
 
     float time = t.elapse();
-
-    std::cout << "\nTotal execution time: " << time << " seconds\n";
 
     std::cout << "\nTotal execution time: " << time << " seconds\n";
 
