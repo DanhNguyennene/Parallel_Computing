@@ -11,7 +11,7 @@ if [ "$1" == "--clean" ]; then
     if [ -f "$HOSTFILE" ]; then
         NODES=$(grep -oE 'MPI-node[0-9]+' "$HOSTFILE" | sort -u)
     else
-        NODES="MPI-node1 MPI-node2 MPI-node3"
+        NODES="MPI-node1 MPI-node2 MPI-node3 MPI-node4 MPI-node5 MPI-node6 MPI-node7 MPI-node8 MPI-node9 MPI-node10 MPI-node11 MPI-node12"
     fi
     for node in $NODES; do
         ssh -o BatchMode=yes -o ConnectTimeout=5 "$node" "rm -rf ~/CO3067_251_Group_04" 2>/dev/null
@@ -33,6 +33,15 @@ if [ ! -f "$HOSTFILE" ]; then
 MPI-node1 slots=4
 MPI-node2 slots=4
 MPI-node3 slots=4
+MPI-node4 slots=4
+MPI-node5 slots=4
+MPI-node6 slots=4
+MPI-node7 slots=4
+MPI-node8 slots=4
+MPI-node9 slots=4
+MPI-node10 slots=4
+MPI-node11 slots=4
+MPI-node12 slots=4
 EOF
 fi
 
