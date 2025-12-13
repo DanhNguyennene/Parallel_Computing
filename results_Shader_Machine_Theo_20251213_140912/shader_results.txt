@@ -1,0 +1,97 @@
+===== Running Naive Shader: Small Matrix =====
+cd shader && python main.py --mode naive --size small
+Matrix size: 128x128, shader=naive
+GPU walltime = 2.619 ms
+sample (0,0): GPU=28.160139, CPU=28.160141, diff=0.000002
+sample (64,42): GPU=32.917664, CPU=32.917675, diff=0.000011
+sample (127,127): GPU=31.744419, CPU=31.744427, diff=0.000008
+
+===== Running Naive Shader: Medium Matrix =====
+cd shader && python main.py --mode naive --size medium
+Matrix size: 1024x1024, shader=naive
+GPU walltime = 66.975 ms
+sample (0,0): GPU=263.484772, CPU=263.484650, diff=0.000122
+sample (512,341): GPU=247.198868, CPU=247.199036, diff=0.000168
+sample (1023,1023): GPU=248.304657, CPU=248.304459, diff=0.000198
+
+===== Running Naive Shader: Big Matrix =====
+cd shader && python main.py --mode naive --size big
+Matrix size: 8192x8192, shader=naive
+GPU walltime = 20007.379 ms
+sample (0,0): GPU=2062.383301, CPU=2062.381348, diff=0.001953
+sample (4096,2730): GPU=0.000000, CPU=2033.751343, diff=2033.751343
+sample (8191,8191): GPU=0.000000, CPU=2045.820435, diff=2045.820435
+
+===== Running Naive Shader: Huge Matrix (16384x16384) =====
+cd shader && python main.py --mode naive --size huge
+Matrix size: 16384x16384, shader=naive
+GPU walltime = 20008.350 ms
+sample (0,0): GPU=4109.028809, CPU=4109.020996, diff=0.007812
+sample (8192,5461): GPU=0.000000, CPU=4094.023926, diff=4094.023926
+sample (16383,16383): GPU=0.000000, CPU=4123.545898, diff=4123.545898
+
+===== Running Chunked Shader: Small Matrix =====
+cd shader && python main.py --mode chunked --size small
+Matrix size: 128x128, shader=chunked
+GPU walltime = 4.574 ms
+sample (0,0): GPU=29.209051, CPU=29.209063, diff=0.000011
+sample (64,42): GPU=36.052391, CPU=36.052391, diff=0.000000
+sample (127,127): GPU=32.493198, CPU=32.493202, diff=0.000004
+
+===== Running Chunked Shader: Medium Matrix =====
+cd shader && python main.py --mode chunked --size medium
+Matrix size: 1024x1024, shader=chunked
+GPU walltime = 68.560 ms
+sample (0,0): GPU=254.814453, CPU=254.814621, diff=0.000168
+sample (512,341): GPU=246.911087, CPU=246.911179, diff=0.000092
+sample (1023,1023): GPU=243.464539, CPU=243.464584, diff=0.000046
+
+===== Running Chunked Shader: Big Matrix =====
+cd shader && python main.py --mode chunked --size big
+Matrix size: 8192x8192, shader=chunked
+GPU walltime = 16723.609 ms
+sample (0,0): GPU=2039.411621, CPU=2039.412598, diff=0.000977
+sample (4096,2730): GPU=2060.805420, CPU=2060.806152, diff=0.000732
+sample (8191,8191): GPU=2070.228760, CPU=2070.229980, diff=0.001221
+
+===== Running Chunked Shader: Huge Matrix (16384x16384) =====
+cd shader && python main.py --mode chunked --size huge
+Matrix size: 16384x16384, shader=chunked
+GPU walltime = 20011.354 ms
+sample (0,0): GPU=4128.581055, CPU=4128.586914, diff=0.005859
+sample (8192,5461): GPU=0.000000, CPU=4152.161133, diff=4152.161133
+sample (16383,16383): GPU=0.000000, CPU=4086.719727, diff=4086.719727
+
+===== Running Strassen Shader: Small Matrix =====
+cd shader && python main.py --mode strassen --size small
+Matrix size: 128x128, shader=strassen
+GPU walltime = 2.750 ms
+sample (0,0): GPU=35.183075, CPU=35.183075, diff=0.000000
+sample (64,42): GPU=33.436451, CPU=33.436447, diff=0.000004
+sample (127,127): GPU=34.137348, CPU=34.137356, diff=0.000008
+
+===== Running Strassen Shader: Medium Matrix =====
+cd shader && python main.py --mode strassen --size medium
+Matrix size: 1024x1024, shader=strassen
+GPU walltime = 42.105 ms
+sample (0,0): GPU=266.255737, CPU=266.255951, diff=0.000214
+sample (512,341): GPU=258.191010, CPU=258.190948, diff=0.000061
+sample (1023,1023): GPU=261.097015, CPU=261.097015, diff=0.000000
+
+===== Running Strassen Shader: Big Matrix =====
+cd shader && python main.py --mode strassen --size big
+Matrix size: 8192x8192, shader=strassen
+GPU walltime = 14728.833 ms
+sample (0,0): GPU=2053.221680, CPU=2053.216553, diff=0.005127
+sample (4096,2730): GPU=2047.785522, CPU=2047.786743, diff=0.001221
+sample (8191,8191): GPU=2042.442505, CPU=2042.440186, diff=0.002319
+
+===== Running Strassen Shader: Huge Matrix =====
+cd shader && python main.py --mode strassen --size huge
+Matrix size: 16384x16384, shader=strassen
+GPU walltime = 20009.804 ms
+sample (0,0): GPU=4095.383789, CPU=4095.385010, diff=0.001221
+sample (8192,5461): GPU=0.000000, CPU=4091.114258, diff=4091.114258
+sample (16383,16383): GPU=0.000000, CPU=4104.117188, diff=4104.117188
+
+===== All tests completed =====

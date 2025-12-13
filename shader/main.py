@@ -46,8 +46,8 @@ def read_ssbo_to_numpy(ssbo, nbytes, dtype=np.float32, count=None):
     return arr
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--mode", choices=["naive", "chunked"], default="naive")
-parser.add_argument("--size", choices=["small", "medium", "big"], default="medium")
+parser.add_argument("--mode", choices=["naive", "chunked", "strassen"], default="naive")
+parser.add_argument("--size", choices=["small", "medium", "big", "huge", "massive"], default="medium")
 args = parser.parse_args()
 
 mode = args.mode
@@ -58,6 +58,10 @@ elif args.size=="medium":
     N=1024
 elif args.size=="big":
     N=8192
+elif args.size=="huge":
+    N=16384
+elif args.size=="massive":
+    N=32768
 TILE = 16
 BLOCK_ROWS = 512  
 
@@ -73,8 +77,8 @@ A = np.random.rand(N, N).astype(np.float32)
 B = np.random.rand(N, N).astype(np.float32)
 C = np.empty((N, N), dtype=np.float32)
 
-if mode == "chunked":
-    Npad = N if N % TILE != 0 else N + TILE
+if mode == "chunked" or mode == "strassen":
+    Npad = N if N % TILE == 0 else ((N + TILE - 1) // TILE) * TILE
     Apad = np.zeros((Npad, Npad), dtype=np.float32)
     Bpad = np.zeros((Npad, Npad), dtype=np.float32)
     Apad[:N,:N] = A
@@ -95,6 +99,8 @@ if locN != -1: glUniform1i(locN, N)
 locStride = glGetUniformLocation(prog, "stride")
 if locStride != -1: glUniform1i(locStride, Npad)
 locBase = glGetUniformLocation(prog, "baseRow")  
+locOffsetA = glGetUniformLocation(prog, "offsetA")
+locOffsetB = glGetUniformLocation(prog, "offsetB")
 
 
 start_time = time.time()
@@ -105,7 +111,7 @@ if mode == "naive":
     glDispatchCompute(groups_x, groups_y, 1)
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
     glFinish()
-else:  
+elif mode == "chunked":  
     groups_x = (Npad + TILE - 1) // TILE
     for base in range(0, N, BLOCK_ROWS):
         rows_this = min(BLOCK_ROWS, N - base)
@@ -114,6 +120,16 @@ else:
         glUniform1i(locBase, base)
         glDispatchCompute(groups_x, groups_y, 1)
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
+    glFinish()
+elif mode == "strassen":
+    # Simple strassen - just use tiled multiply for now
+    # Full Strassen recursion would require multiple passes
+    groups_x = (Npad + TILE - 1) // TILE
+    groups_y = (Npad + TILE - 1) // TILE
+    if locOffsetA != -1: glUniform1i(locOffsetA, 0)
+    if locOffsetB != -1: glUniform1i(locOffsetB, 0)
+    glDispatchCompute(groups_x, groups_y, 1)
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
     glFinish()
 
 end_time = time.time()

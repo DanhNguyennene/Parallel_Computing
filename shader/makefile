@@ -84,5 +84,6 @@ all_tests: \
 	test_chunked_huge \
 	test_strassen_small \
 	test_strassen_medium \
-	test_strassen_big
+	test_strassen_big \
+	test_strassen_huge
 	@echo "===== All tests completed ====="
