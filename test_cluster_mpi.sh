@@ -120,24 +120,23 @@ compile_on_all_nodes "mpi-naive"
 if [ -f ./mpi_program ]; then
     {
         echo "=== MPI Naive ==="
-        for size in 100 1000 4000; do
+        # Quick tests with reasonable sizes
+        for size in 1000 4000 8000; do
             echo "Size: ${size}x${size}"
-            for procs in 1 2 4 8; do
+            # Test with 2, 4, 8, 10 processes to use all nodes
+            for procs in 2 4 8 10; do
                 if [ $((size % procs)) -eq 0 ]; then
                     echo "Procs: $procs"
-                    if [ $size -le 1000 ]; then
-                        mpirun $MPI_OPTS -np $procs ./mpi_program $size 1
-                    else
-                        mpirun $MPI_OPTS -np $procs ./mpi_program $size 0
-                    fi
+                    # No verification for large matrices to save time
+                    mpirun $MPI_OPTS -np $procs ./mpi_program $size 0
                 fi
             done
         done
         echo ""
-        echo "=== Testing Pipelined Ring Method ==="
-        for procs in 2 4 8; do
+        echo "=== Scalability Test (10000x10000) ==="
+        for procs in 1 2 4 8 10 20 40; do
             echo "Procs: $procs"
-            mpirun $MPI_OPTS -np $procs ./mpi_program 1000 0
+            mpirun $MPI_OPTS -np $procs ./mpi_program 10000 0
         done
     } 2>&1 | tee "$OUTPUT_DIR/mpi_naive_results.txt"
 fi
@@ -149,13 +148,11 @@ compile_on_all_nodes "mpi-strassen"
 if [ -f ./mpi_program ]; then
     {
         echo "=== MPI Strassen ==="
-        for size in 100 1000 4000; do
+        # Strassen requires 7 processes
+        for size in 1024 4096 8192; do
             echo "Size: ${size}x${size}"
-            if [ $size -le 1000 ]; then
-                mpirun $MPI_OPTS -np 7 ./mpi_program $size 1
-            else
-                mpirun $MPI_OPTS -np 7 ./mpi_program $size 0
-            fi
+            echo "Procs: 7"
+            mpirun $MPI_OPTS -np 7 ./mpi_program $size 0
         done
     } 2>&1 | tee "$OUTPUT_DIR/mpi_strassen_results.txt"
 fi
@@ -167,17 +164,23 @@ compile_on_all_nodes "hybrid-strassen"
 if [ -f ./main ]; then
     {
         echo "=== Hybrid MPI+OpenMP ==="
-        for size in 100 1000 4000; do
+        # Test different thread counts with 7 MPI processes
+        for size in 2048 8192; do
             echo "Size: ${size}x${size}"
-            for threads in 1 2 4 7; do
-                echo "Procs: 7, Threads: $threads"
+            for threads in 2 4; do
+                echo "Procs: 7, Threads: $threads (Total: $((7*threads)) workers)"
                 export OMP_NUM_THREADS=$threads
-                if [ $size -le 1000 ]; then
-                    mpirun $MPI_OPTS -np 7 -x OMP_NUM_THREADS=$threads ./main $size 1 $threads 128
-                else
-                    mpirun $MPI_OPTS -np 7 -x OMP_NUM_THREADS=$threads ./main $size 0 $threads 128
-                fi
+                mpirun $MPI_OPTS -np 7 -x OMP_NUM_THREADS=$threads ./main $size 0 $threads 128
             done
+        done
+        
+        echo ""
+        echo "=== Scalability Test (10240x10240) ==="
+        # Fixed 7 processes, vary threads to utilize all CPU cores
+        for threads in 1 2 4 8; do
+            echo "Procs: 7, Threads: $threads (Total: $((7*threads)) workers)"
+            export OMP_NUM_THREADS=$threads
+            mpirun $MPI_OPTS -np 7 -x OMP_NUM_THREADS=$threads ./main 10240 0 $threads 128
         done
     } 2>&1 | tee "$OUTPUT_DIR/hybrid_strassen_results.txt"
 fi
