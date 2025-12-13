@@ -105,9 +105,9 @@ if [ -f ./mpi_program ]; then
             done
         done
         echo ""
-        echo "=== Testing Cannon Algorithm ==="
-        for procs in 4 9 16; do
-            echo "Procs: $procs (sqrt: $(echo "sqrt($procs)" | bc))"
+        echo "=== Testing Block-Cyclic Method ==="
+        for procs in 4 8 16; do
+            echo "Procs: $procs"
             mpirun $MPI_OPTS -np $procs ./mpi_program 1000 0
         done
     } 2>&1 | tee "$OUTPUT_DIR/mpi_naive_results.txt"

@@ -34,10 +34,10 @@ if [ $? -eq 0 ]; then
             done
         done
         echo ""
-        echo "=== Testing Tiled Method ==="
-        for tile in 32 64 128 256; do
-            echo "Tile size: $tile"
-            ./main 1000 0 4 $tile
+        echo "=== Testing Block-Cyclic Method ==="
+        for threads in 4 8; do
+            echo "Threads: $threads, Block: 64"
+            ./main 1000 0 $threads 64
         done
     } 2>&1 | tee "../$OUTPUT_DIR/openmp_naive_results.txt"
 fi

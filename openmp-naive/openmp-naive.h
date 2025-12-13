@@ -48,6 +48,14 @@ void tiledMatMul(
     int num_threads,
     int tile_size);
 
+void blockCyclicMatMul(
+    int n,
+    const float *A,
+    const float *B,
+    float *C,
+    int num_threads,
+    int block_size);
+
 void recursiveMatMul(
     int n,
     const float *A, int lda,

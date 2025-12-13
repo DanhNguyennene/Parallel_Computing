@@ -88,6 +88,56 @@ void tiledMatMul(
     }
 }
 
+void blockCyclicMatMul(
+    int n,
+    const float *A,
+    const float *B,
+    float *C,
+    int num_threads,
+    int block_size)
+{
+    omp_set_num_threads(num_threads);
+    std::fill(C, C + n * n, 0.0f);
+    
+    int num_blocks = (n + block_size - 1) / block_size;
+    
+#pragma omp parallel
+    {
+        int tid = omp_get_thread_num();
+        
+        for (int bi = tid; bi < num_blocks; bi += num_threads)
+        {
+            int i_start = bi * block_size;
+            int i_end = std::min(i_start + block_size, n);
+            
+            for (int bk = 0; bk < num_blocks; bk++)
+            {
+                int k_start = bk * block_size;
+                int k_end = std::min(k_start + block_size, n);
+                
+                for (int bj = 0; bj < num_blocks; bj++)
+                {
+                    int j_start = bj * block_size;
+                    int j_end = std::min(j_start + block_size, n);
+                    
+                    for (int i = i_start; i < i_end; i++)
+                    {
+                        for (int k = k_start; k < k_end; k++)
+                        {
+                            float a_ik = A[i * n + k];
+#pragma omp simd
+                            for (int j = j_start; j < j_end; j++)
+                            {
+                                C[i * n + j] += a_ik * B[k * n + j];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 void recursiveMatMul(
     int n,
     const float *A, int lda,

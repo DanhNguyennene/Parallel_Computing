@@ -29,9 +29,9 @@ test-procs: $(TARGET)
 	mpirun -np 4 ./$(TARGET) 1000 0
 	mpirun -np 8 ./$(TARGET) 1000 0
 
-test-cannon: $(TARGET)
+test-blockcyclic: $(TARGET)
 	mpirun -np 4 ./$(TARGET) 1000 0
-	mpirun -np 9 ./$(TARGET) 1000 0
+	mpirun -np 8 ./$(TARGET) 1000 0
 	mpirun -np 16 ./$(TARGET) 1000 0
 
-.PHONY: all clean test test-sizes test-procs test-cannon
+.PHONY: all clean test test-sizes test-procs test-blockcyclic
