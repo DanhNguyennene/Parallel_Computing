@@ -194,7 +194,7 @@ def plot_gpu_shader_performance():
     
     ax1.set_xlabel('Matrix Size', fontweight='bold')
     ax1.set_ylabel('Execution Time (ms, log scale)', fontweight='bold')
-    ax1.set_title('GPU Shader Performance Comparison\nNVIDIA RTX 5070 Ti',
+    ax1.set_title('GPU Shader Performance Comparison\nIntel i5-13420H Integrated Graphics (UHD)',
                  fontweight='bold', pad=10)
     ax1.set_yscale('log')
     ax1.set_xticks(x)

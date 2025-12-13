@@ -154,6 +154,31 @@ The Message Passing Interface (MPI) implementations leverage distributed memory 
 
 \subsection{MPI Naive Matrix Multiplication}
 
+\textbf{Mathematical Formulation:}
+
+For matrices $A, B \in \mathbb{R}^{N \times N}$, the matrix product $C = AB$ is defined as:
+\[
+C_{ij} = \sum_{k=1}^{N} A_{ik} \cdot B_{kj}, \quad \forall i,j \in \{1, \ldots, N\}
+\]
+
+With $p$ MPI processes, we distribute the computation:
+\begin{itemize}
+    \item Process $r$ computes rows $[r \cdot \frac{N}{p}, (r+1) \cdot \frac{N}{p})$ of result matrix $C$
+    \item Sequential complexity: $T_{\text{seq}} = \mathcal{O}(N^3)$
+    \item Parallel computation per process: $T_{\text{comp}} = \mathcal{O}(\frac{N^3}{p})$
+    \item Communication time: $T_{\text{comm}} = \mathcal{O}(N^2)$ for broadcast + $\mathcal{O}(\frac{N^2}{p})$ for scatter/gather
+\end{itemize}
+
+\textbf{Theoretical Speedup:}
+\[
+S(p) = \frac{T_{\text{seq}}}{T_{\text{comp}} + T_{\text{comm}}} = \frac{\mathcal{O}(N^3)}{\mathcal{O}(\frac{N^3}{p}) + \mathcal{O}(N^2)} \approx p \quad \text{for } N \gg \sqrt{p}
+\]
+
+\textbf{Parallel Efficiency:}
+\[
+\eta(p) = \frac{S(p)}{p} = \frac{1}{1 + \frac{p \cdot T_{\text{comm}}}{T_{\text{comp}}}} \to 1 \quad \text{as } N \to \infty
+\]
+
 The MPI naive implementation employs a \textbf{pipelined ring communication pattern} combined with Z-order curve blocking for cache optimization. Unlike traditional scatter-broadcast-gather approaches, this implementation uses point-to-point communication to distribute matrix rows from rank 0 to all processes sequentially, followed by a collective broadcast of matrix $B$.
 
 \textbf{Algorithm Overview:}
@@ -273,9 +298,36 @@ The computational complexity is $O(n^3/p)$ per process, while communication over
 
 \textbf{Algorithm Overview:}
 
-Strassen's algorithm reduces matrix multiplication to 7 recursive multiplications instead of 8, achieving better asymptotic complexity.
+Strassen's algorithm reduces matrix multiplication from 8 to 7 recursive multiplications, achieving subquadratic asymptotic complexity.
 
-\textbf{Complexity:} $O(n^{\log_2 7}) \approx O(n^{2.807})$
+\textbf{Complexity Analysis:}
+
+The recurrence relation:
+\[
+T(N) = 7T\left(\frac{N}{2}\right) + \Theta(N^2)
+\]
+
+By Master Theorem (Case 1): $a=7, b=2, \log_b a = \log_2 7 \approx 2.807 > 2$
+\[
+T(N) = \Theta(N^{\log_2 7}) \approx \Theta(N^{2.807})
+\]
+
+\textbf{Parallel Model with 7 MPI Processes:}
+\begin{itemize}
+    \item Sequential: 7 products computed serially $\to 7 \cdot T_{\text{mult}}$
+    \item Parallel: 7 products computed simultaneously $\to T_{\text{mult}}$ (ideal)
+    \item Speedup per recursion level: $S \approx 7$
+    \item Communication overhead: $\mathcal{O}(N^2)$ for data distribution + result assembly
+    \item Total parallel time: $T_{\text{par}} = T_{\text{mult}} + \mathcal{O}(N^2)$
+\end{itemize}
+
+\textbf{Comparison with Naive:}
+\begin{itemize}
+    \item Naive: $\mathcal{O}(N^3)$ operations
+    \item Strassen: $\mathcal{O}(N^{2.807})$ operations
+    \item Crossover point: typically $N \approx 512$ to $N \approx 2048$
+    \item Below threshold (128): switches to naive for better cache performance
+\end{itemize}
 
 \textbf{The Seven Products:}
 
@@ -382,6 +434,34 @@ void strassen_mpi_wrapper(int N, int rank, int numProcs,
 The OpenMP implementations leverage shared-memory parallelism using thread-based task decomposition. OpenMP provides a simpler programming model compared to MPI, as all threads share the same address space. We implemented both naive and Strassen algorithms using OpenMP's task-based parallelism combined with recursive divide-and-conquer strategies for optimal load balancing.
 
 \subsection{OpenMP Naive Implementation}
+
+\textbf{Mathematical Model for Tiling:}
+
+For tile size $B$ (typically 128) and cache size $M$:
+\begin{itemize}
+    \item Matrix partitioned into $\lceil \frac{N}{B} \rceil^2$ tiles
+    \item Working set per tile: $3B^2$ elements (from $A$, $B$, $C$)
+    \item Optimal tile size: $B = \lfloor \sqrt{M/3} \rfloor$ to fit in L2 cache
+    \item Cache misses: $\mathcal{O}(\frac{N^3}{B \cdot L})$ where $L$ is cache line size
+    \item Improvement: $\sim B\times$ reduction in cache misses vs. naive
+\end{itemize}
+
+\textbf{Parallel Complexity with $t$ Threads:}
+\[
+T_{\text{par}}(t) = \frac{\mathcal{O}(N^3)}{t} + \mathcal{O}(\frac{N^2}{B^2} \cdot t_{\text{sched}}) + \mathcal{O}(t \log t)
+\]
+
+where:
+\begin{itemize}
+    \item First term: ideal parallel computation
+    \item Second term: dynamic scheduling overhead ($t_{\text{sched}} \approx 1\mu s$ per task)
+    \item Third term: thread synchronization cost
+\end{itemize}
+
+\textbf{Theoretical Speedup:}
+\[
+S(t) = \frac{T_{\text{seq}}}{T_{\text{par}}(t)} \approx \frac{t}{1 + \frac{c \cdot t}{N}} \quad \text{where } c = \frac{N^2 \cdot t_{\text{sched}}}{B^2 \cdot t_{\text{comp}}}
+\]
 
 The OpenMP naive implementation uses a cache-optimized tiled matrix multiplication approach with OpenMP parallel for loops. Rather than using divide-and-conquer recursion, this implementation employs blocking (tiling) to improve cache locality and combines it with dynamic scheduling for better load balancing across threads. The implementation uses the standard $O(n^3)$ algorithm but optimizes memory access patterns through tiling and loop reordering.
 
@@ -529,6 +609,40 @@ void strassenParallel(int n, const float *A, int lda,
 \section{Hybrid MPI+OpenMP Implementation}
 
 \subsection{Architecture Overview}
+
+\textbf{Two-Level Parallel Model:}
+
+For $p$ MPI processes and $t$ OpenMP threads per process:
+
+\textbf{Total Parallelism:}
+\[
+\Pi_{\text{total}} = p \times t
+\]
+
+\textbf{Hierarchical Computation:}
+\begin{itemize}
+    \item \textbf{Level 1 (MPI)}: Coarse-grained parallelism across $p=7$ processes
+    \item \textbf{Level 2 (OpenMP)}: Fine-grained parallelism with $t$ threads per process
+    \item Per-process work: $W_{\text{proc}} = \frac{W_{\text{total}}}{p}$
+    \item Per-thread work: $W_{\text{thread}} = \frac{W_{\text{total}}}{p \cdot t}$ (ideal)
+\end{itemize}
+
+\textbf{Communication Model:}
+\[
+T_{\text{comm}} = T_{\text{MPI}} + T_{\text{OpenMP}}
+\]
+
+where:
+\begin{itemize}
+    \item $T_{\text{MPI}} = \alpha_{\text{MPI}} + \beta_{\text{MPI}} \cdot \frac{N^2}{p}$: Inter-node communication (network latency $\alpha$, bandwidth $\beta$)
+    \item $T_{\text{OpenMP}} = \mathcal{O}(t \log t)$: Intra-node synchronization (shared memory)
+    \item Typically: $T_{\text{MPI}} \gg T_{\text{OpenMP}}$ due to network bottleneck
+\end{itemize}
+
+\textbf{Parallel Efficiency:}
+\[
+\eta_{\text{hybrid}} = \frac{T_{\text{seq}}}{p \cdot t \cdot T_{\text{par}}} = \frac{1}{1 + \frac{T_{\text{MPI}}}{T_{\text{comp}}/p} + \frac{T_{\text{OpenMP}}}{T_{\text{comp}}/(p \cdot t)}}
+\]
 
 The hybrid implementation represents the most sophisticated parallelization strategy, combining distributed-memory MPI for inter-node communication with shared-memory OpenMP for intra-node parallelism. This two-level approach is particularly effective on modern HPC clusters where each node contains multiple cores. The implementation uses 7 MPI processes (matching Strassen's requirement), with each process spawning multiple OpenMP threads to fully utilize available hardware resources.
 
@@ -763,47 +877,47 @@ This section presents comprehensive benchmark results from testing all implement
 
 \begin{table}[H]
 \centering
-\caption{OpenMP Naive Performance - Machine 1 (Complete Results)}
+\caption{OpenMP Naive Performance - Machine 1: i5-14600K (20 cores)}
 \begin{tabular}{cccc}
 \toprule
 \textbf{Matrix Size} & \textbf{Threads} & \textbf{Time (s)} & \textbf{Speedup} \\
 \midrule
 100×100 & 1 & 0.0001 & 1.00× \\
-100×100 & 2 & 0.0001 & 1.00× \\
-100×100 & 4 & 0.0002 & 0.50× \\
-100×100 & 8 & 0.0003 & 0.33× \\
-100×100 & 16 & 0.0004 & 0.25× \\
+100×100 & 2 & 0.0002 & 0.38× \\
+100×100 & 4 & 0.0002 & 0.40× \\
+100×100 & 8 & 0.0003 & 0.27× \\
+100×100 & 16 & 0.0004 & 0.17× \\
 \midrule
-1000×1000 & 1 & 0.0797 & 1.00× \\
-1000×1000 & 2 & 0.0355 & 2.24× \\
-1000×1000 & 4 & 0.0204 & 3.91× \\
-1000×1000 & 8 & 0.0204 & 3.91× \\
-1000×1000 & 16 & 0.0107 & 7.45× \\
+1000×1000 & 1 & 0.0693 & 1.00× \\
+1000×1000 & 2 & 0.0380 & 1.82× \\
+1000×1000 & 4 & 0.0229 & 3.02× \\
+1000×1000 & 8 & 0.0140 & 4.96× \\
+1000×1000 & 16 & 0.0138 & 5.02× \\
 \midrule
-10000×10000 & 1 & 64.6434 & 1.00× \\
-10000×10000 & 2 & 32.6183 & 1.98× \\
-10000×10000 & 4 & 16.1950 & 3.99× \\
-10000×10000 & 8 & 9.7749 & 6.61× \\
-10000×10000 & 16 & 8.3111 & 7.78× \\
+10000×10000 & 1 & 76.20 & 1.00× \\
+10000×10000 & 2 & 37.73 & 2.02× \\
+10000×10000 & 4 & 18.96 & 4.02× \\
+10000×10000 & 8 & 11.33 & 6.72× \\
+10000×10000 & 16 & 7.72 & 9.87× \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{table}[H]
 \centering
-\caption{OpenMP Naive Performance - Machine 2 (Complete Results)}
+\caption{OpenMP Naive Performance - Machine 2: i7-11370H (8 cores)}
 \begin{tabular}{cccc}
 \toprule
 \textbf{Matrix Size} & \textbf{Threads} & \textbf{Time (s)} & \textbf{Speedup} \\
 \midrule
 100×100 & 1 & 0.0001 & 1.00× \\
-100×100 & 2 & 0.0002 & 0.50× \\
-100×100 & 4 & 0.0004 & 0.25× \\
-100×100 & 8 & 0.0140 & 0.01× \\
-100×100 & 16 & 0.0014 & 0.07× \\
+100×100 & 2 & 0.0003 & 0.43× \\
+100×100 & 4 & 0.0004 & 0.29× \\
+100×100 & 8 & 0.0078 & 0.02× \\
+100×100 & 16 & 0.0017 & 0.07× \\
 \midrule
-1000×1000 & 1 & 0.1230 & 1.00× \\
-1000×1000 & 2 & 0.0712 & 1.73× \\
+1000×1000 & 1 & 0.1344 & 1.00× \\
+1000×1000 & 2 & 0.0635 & 2.12× \\
 1000×1000 & 4 & 0.0474 & 2.59× \\
 1000×1000 & 8 & 0.0698 & 1.76× \\
 1000×1000 & 16 & 0.0377 & 3.26× \\
@@ -833,23 +947,20 @@ This section presents comprehensive benchmark results from testing all implement
 \toprule
 \textbf{Machine} & \textbf{Threads} & \textbf{Time (s)} & \textbf{Speedup} & \textbf{Efficiency (\%)} \\
 \midrule
-\multirow{5}{*}{Machine 1} & 1 & 0.0571 & 1.00× & 100.0 \\
-& 2 & 0.0403 & 1.42× & 70.9 \\
-& 4 & 0.0255 & 2.24× & 56.0 \\
-& 8 & 0.0183 & 3.12× & 39.0 \\
-& 16 & 0.0256 & 2.23× & 14.0 \\
+\multirow{4}{*}{Machine 1} & 7 & 0.0331 & 1.00× & 14.3 \\
+& 14 & 0.0205 & 1.61× & 11.5 \\
+& 21 & 0.0158 & 2.10× & 10.0 \\
+& 28 & 0.0199 & 1.66× & 5.9 \\
 \midrule
-\multirow{5}{*}{Machine 2} & 1 & 0.1093 & 1.00× & 100.0 \\
-& 2 & 0.0852 & 1.28× & 64.2 \\
-& 4 & 0.0724 & 1.51× & 37.7 \\
-& 8 & 0.0678 & 1.61× & 20.1 \\
-& 16 & 0.0539 & 2.03× & 12.7 \\
+\multirow{4}{*}{Machine 2} & 7 & 0.1215 & 1.00× & 14.3 \\
+& 14 & 0.0650 & 1.87× & 13.4 \\
+& 21 & 0.0596 & 2.04× & 9.7 \\
+& 28 & 0.0712 & 1.71× & 6.1 \\
 \midrule
-\multirow{5}{*}{Machine 3} & 1 & 0.0823 & 1.00× & 100.0 \\
-& 2 & 0.0507 & 1.62× & 81.2 \\
-& 4 & 0.0434 & 1.90× & 47.4 \\
-& 8 & 0.0319 & 2.58× & 32.3 \\
-& 16 & 0.0378 & 2.18× & 13.6 \\
+\multirow{4}{*}{Machine 3} & 7 & 0.1800 & 1.00× & 14.3 \\
+& 14 & 0.1651 & 1.09× & 7.8 \\
+& 21 & 0.1528 & 1.18× & 5.6 \\
+& 28 & 0.1774 & 1.01× & 3.6 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -861,23 +972,20 @@ This section presents comprehensive benchmark results from testing all implement
 \toprule
 \textbf{Machine} & \textbf{Threads} & \textbf{Time (s)} & \textbf{Speedup} & \textbf{Efficiency (\%)} \\
 \midrule
-\multirow{5}{*}{Machine 1} & 1 & 32.9442 & 1.00× & 100.0 \\
-& 2 & 19.3577 & 1.70× & 85.1 \\
-& 4 & 10.2281 & 3.22× & 80.5 \\
-& 8 & 5.7473 & 5.73× & 71.7 \\
-& 16 & 4.6332 & 7.11× & 44.4 \\
+\multirow{4}{*}{Machine 1 (i5-14600K)} & 7 & 6.09 & 1.00× & 14.3 \\
+& 14 & 4.71 & 1.29× & 9.2 \\
+& 21 & 4.73 & 1.29× & 6.1 \\
+& 28 & 4.78 & 1.27× & 4.5 \\
 \midrule
-\multirow{5}{*}{Machine 2} & 1 & 66.9766 & 1.00× & 100.0 \\
-& 2 & 57.8701 & 1.16× & 57.9 \\
-& 4 & 40.4281 & 1.66× & 41.4 \\
-& 8 & 51.1821 & 1.31× & 16.4 \\
-& 16 & 52.5861 & 1.27× & 8.0 \\
+\multirow{4}{*}{Machine 2 (i7-11370H)} & 7 & 45.26 & 1.00× & 14.3 \\
+& 14 & 39.60 & 1.14× & 8.2 \\
+& 21 & 53.89 & 0.84× & 4.0 \\
+& 28 & 36.18 & 1.25× & 4.5 \\
 \midrule
-\multirow{5}{*}{Machine 3} & 1 & 42.3458 & 1.00× & 100.0 \\
-& 2 & 33.3096 & 1.27× & 63.6 \\
-& 4 & 24.5504 & 1.72× & 43.1 \\
-& 8 & 19.9771 & 2.12× & 26.5 \\
-& 16 & 17.5197 & 2.42× & 15.1 \\
+\multirow{4}{*}{Machine 3 (i5-13420H)} & 7 & 118.78 & 1.00× & 14.3 \\
+& 14 & 115.66 & 1.03× & 7.3 \\
+& 21 & 119.41 & 0.99× & 4.7 \\
+& 28 & 122.17 & 0.97× & 3.5 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1005,7 +1113,7 @@ The MPI tests on HPCC cluster encountered configuration issues (hostfile parsing
 
 \textbf{Test Environment:}
 \begin{itemize}
-    \item \textbf{GPU}: NVIDIA RTX 5070 Ti
+    \item \textbf{GPU}: Intel i5-13420H Integrated Graphics (Intel UHD Graphics)
     \item \textbf{OpenGL Version}: 4.6.0
     \item \textbf{Display Mode}: Headless (EGL context)
     \item \textbf{System}: WSL2 Ubuntu on Windows 11
@@ -1114,9 +1222,9 @@ All errors are within acceptable floating-point precision bounds, confirming cor
 Serial CPU & 758ms & Intel CPU (1 core) & 1.00× \\
 OpenMP Naive (4 threads) & 61.8ms & Intel CPU (4 cores) & 12.3× \\
 OpenMP Naive (16 threads) & 100.9ms & Intel CPU (16 cores) & 7.5× \\
-GPU Naive & 67.0ms & RTX 5070 Ti & 11.3× \\
-GPU Chunked & 68.6ms & RTX 5070 Ti & 11.1× \\
-GPU Strassen & 42.1ms & RTX 5070 Ti & 18.0× \\ \bottomrule
+GPU Naive & 67.0ms & Intel UHD Graphics & 11.3× \\
+GPU Chunked & 68.6ms & Intel UHD Graphics & 11.1× \\
+GPU Strassen & 42.1ms & Intel UHD Graphics & 18.0× \\ \bottomrule
 \end{tabular}
 \end{table}
 
@@ -1370,7 +1478,7 @@ GPU Shader & ~180 & 1.48× & Maximum performance, GPU available \\ \bottomrule
 & 2 processes & 83.4 & 1.39 & 69.4 \\
 & 4 processes & 134.3 & 0.86 & 21.6 \\
 & 8 processes & 252.4 & 0.46 & 5.7 \\ \midrule
-GPU (3072 cores) & RTX 5070 Ti & 67.0 & 11.32 & 0.37 per core \\ \bottomrule
+GPU (96 EUs) & Intel UHD Graphics & 67.0 & 11.32 & - \\ \bottomrule
 \end{tabular}
 \label{tab:efficiency}
 \end{table}
@@ -1399,6 +1507,12 @@ GPU (3072 cores) & RTX 5070 Ti & 67.0 & 11.32 & 0.37 per core \\ \bottomrule
         \item \textbf{Reason:} GPU parallelism overcomes kernel launch overhead, Strassen's $O(n^{2.807})$ advantage becomes significant
     \end{itemize}
     
+    \item \textbf{Large Matrices ($N > 2048$):}
+    \begin{itemize}
+        \item \textbf{Best Choice:} MPI for distributed systems, GPU Strassen for single-node GPU systems
+        \item \textbf{Reason:} Communication overhead amortized over large computation, full utilization of cluster resources
+    \end{itemize}
+\end{enumerate}
 
 \section{References}
 
