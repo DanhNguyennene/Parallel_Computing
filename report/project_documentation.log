@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/nixos.org) (preloaded format=pdflatex 1980.1.1)  13 DEC 2025 17:11
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/nixos.org) (preloaded format=pdflatex 1980.1.1)  13 DEC 2025 17:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -537,12 +537,7 @@ exmfdist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count318
 \l__pdf_internal_box=\box66
-) (./project_documentation.aux
-! Extra }, or forgotten \endgroup.
-l.95 }
-      
-? 
-)
+) (./project_documentation.aux)
 \openout1 = `project_documentation.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 86.
@@ -631,7 +626,7 @@ Package hyperref Info: Link coloring OFF on input line 86.
 \@outlinefile=\write3
 \openout3 = `project_documentation.out'.
 
-<logo.png, id=225, 845.0772pt x 597.6729pt>
+<logo.png, id=184, 845.0772pt x 597.6729pt>
 File: logo.png Graphic file (type png)
 <use logo.png>
 Package pdftex.def Info: logo.png  used on input line 103.
@@ -1144,32 +1139,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[34
-pdfTeX warning (ext4): destination with the same identifier (name{table.17}) ha
-s been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.1823     \item O
-                  penMP Architecture Review Board. (2021). \textit{OpenMP Ap...
-]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 14.49998pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.49998pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
-
-[35]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 14.49998pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.49998pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
-
-[36] (./project_documentation.aux)
+[34] (./project_documentation.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -1179,13 +1149,13 @@ L3 programming layer <2025-01-18>
 LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
 Package rerunfilecheck Info: File `project_documentation.out' has not changed.
-(rerunfilecheck)             Checksum: 7DEA0FA408A36750F08B3179F09B6FE8;9460.
+(rerunfilecheck)             Checksum: 9196B3FACAFB5010BFFBC1BB9E674CEA;7380.
  ) 
 Here is how much of TeX's memory you used:
- 15609 strings out of 473201
- 245703 string characters out of 5689025
- 1234045 words of memory out of 5000000
- 38100 multiletter control sequences out of 15000+600000
+ 15535 strings out of 473201
+ 244699 string characters out of 5689025
+ 1233842 words of memory out of 5000000
+ 38065 multiletter control sequences out of 15000+600000
  567268 words of font info for 67 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,12n,79p,535b,2159s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1218,10 +1188,10 @@ q4gbqp2pph3mw2jp5kwg0zlhwwwh3hx8-texlive-combined-full-2024-final-texmfdist/fon
 ts/type1/public/cm-super/sfbx1200.pfb></nix/store/q4gbqp2pph3mw2jp5kwg0zlhwwwh3
 hx8-texlive-combined-full-2024-final-texmfdist/fonts/type1/public/cm-super/sfrm
 1200.pfb>
-Output written on project_documentation.pdf (37 pages, 382004 bytes).
+Output written on project_documentation.pdf (35 pages, 373302 bytes).
 PDF statistics:
- 1130 PDF objects out of 1200 (max. 8388607)
- 1044 compressed objects within 11 object streams
- 568 named destinations out of 1000 (max. 500000)
- 446 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1034 PDF objects out of 1200 (max. 8388607)
+ 951 compressed objects within 10 object streams
+ 529 named destinations out of 1000 (max. 500000)
+ 366 words of extra memory for PDF output out of 10000 (max. 10000000)
 

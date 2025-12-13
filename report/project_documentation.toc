@@ -43,14 +43,4 @@
 \contentsline {subsection}{\numberline {11.1}Execution Time Summary}{31}{subsection.11.1}%
 \contentsline {subsection}{\numberline {11.2}Key Findings}{31}{subsection.11.2}%
 \contentsline {subsection}{\numberline {11.3}Comparison with Optimized Libraries}{32}{subsection.11.3}%
-\contentsline {subsection}{\numberline {11.4}Implementation Trade-offs}{34}{subsection.11.4}%
-\contentsline {subsection}{\numberline {11.5}Key Insights and Recommendations}{34}{subsection.11.5}%
-\contentsline {section}{\numberline {12}References}{35}{section.12}%
-\contentsline {section}{\numberline {A}Appendix A: Complete Source Code Listings}{35}{appendix.A}%
-\contentsline {subsection}{\numberline {A.1}Directory Structure}{35}{subsection.A.1}%
-\contentsline {section}{\numberline {B}Appendix B: Build and Run Instructions}{35}{appendix.B}%
-\contentsline {subsection}{\numberline {B.1}Building MPI Naive}{35}{subsection.B.1}%
-\contentsline {subsection}{\numberline {B.2}Building OpenMP Naive}{36}{subsection.B.2}%
-\contentsline {subsection}{\numberline {B.3}Building Hybrid Strassen}{36}{subsection.B.3}%
-\contentsline {section}{\numberline {C}Appendix C: Performance Data Tables}{36}{appendix.C}%
-\contentsline {subsection}{\numberline {C.1}Complete OpenMP Results - Machine 3}{36}{subsection.C.1}%
+\contentsline {section}{\numberline {12}References}{34}{section.12}%
