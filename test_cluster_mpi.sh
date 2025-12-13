@@ -120,23 +120,18 @@ compile_on_all_nodes "mpi-naive"
 if [ -f ./mpi_program ]; then
     {
         echo "=== MPI Naive ==="
-        # Small matrix with verification to check correctness
         echo "Size: 1000x1000 (with verification)"
-        for procs in 10 20 40; do
+        for procs in 20 40; do
             echo "Procs: $procs"
             mpirun $MPI_OPTS -np $procs ./mpi_program 1000 1
         done
         
         echo ""
-        echo "=== Large matrices without verification ==="
-        # Large matrices, no verification for speed
         for size in 5000 10000; do
             echo "Size: ${size}x${size}"
-            for procs in 10 20 40; do
-                if [ $((size % procs)) -eq 0 ]; then
-                    echo "Procs: $procs"
-                    mpirun $MPI_OPTS -np $procs ./mpi_program $size 0
-                fi
+            for procs in 20 40; do
+                echo "Procs: $procs"
+                mpirun $MPI_OPTS -np $procs ./mpi_program $size 0
             done
         done
     } 2>&1 | tee "$OUTPUT_DIR/mpi_naive_results.txt"
@@ -149,19 +144,17 @@ compile_on_all_nodes "mpi-strassen"
 if [ -f ./mpi_program ]; then
     {
         echo "=== MPI Strassen ==="
-        # Small with verification
-        echo "Size: 1024x1024 (with verification)"
-        echo "Procs: 7"
-        mpirun $MPI_OPTS -np 7 ./mpi_program 1024 1
+        echo "Size: 1024x1024, Procs: 7 (verify)"
+        mpirun $MPI_OPTS -np 28 ./mpi_program 1024 1
         
-        echo ""
-        echo "=== Large matrices without verification ==="
-        # Strassen requires 7 processes
-        for size in 4096 8192; do
-            echo "Size: ${size}x${size}"
-            echo "Procs: 7"
-            mpirun $MPI_OPTS -np 7 ./mpi_program $size 0
-        done
+        echo "Size: 8192x8192, Procs: 7"
+        mpirun $MPI_OPTS -np 28 ./mpi_program 8192 0
+        
+        echo "Size: 8192x8192, Procs: 14"
+        mpirun $MPI_OPTS -np 35 ./mpi_program 8192 0
+        
+        echo "Size: 8192x8192, Procs: 21"
+        mpirun $MPI_OPTS -np 35 ./mpi_program 8192 0
     } 2>&1 | tee "$OUTPUT_DIR/mpi_strassen_results.txt"
 fi
 
@@ -172,26 +165,21 @@ compile_on_all_nodes "hybrid-strassen"
 if [ -f ./main ]; then
     {
         echo "=== Hybrid MPI+OpenMP ==="
-        # Small with verification - use 7 processes (Strassen requirement)
-        echo "Size: 2048x2048 (with verification)"
-        for threads in 2 4; do
-            echo "Procs: 7, Threads: $threads (Total: $((7*threads)) workers)"
-            export OMP_NUM_THREADS=$threads
-            mpirun $MPI_OPTS -np 7 -x OMP_NUM_THREADS=$threads ./main 2048 1 $threads 128
-        done
+        echo "Size: 2048x2048, Procs: 7, Threads: 1 (verify)"
+        export OMP_NUM_THREADS=1
+        mpirun $MPI_OPTS -np 28 -x OMP_NUM_THREADS=1 ./main 2048 1 1 128
         
-        echo ""
-        echo "=== Large matrices without verification ==="
-        # Large matrices with 7 procs (Strassen) but varying threads to use all cores
-        for size in 8192 10240; do
-            echo "Size: ${size}x${size}"
-            # 7 processes with 2, 4, 8 threads = 14, 28, 56 total workers
-            for threads in 2 4 8; do
-                echo "Procs: 7, Threads: $threads (Total: $((7*threads)) workers)"
-                export OMP_NUM_THREADS=$threads
-                mpirun $MPI_OPTS -np 7 -x OMP_NUM_THREADS=$threads ./main $size 0 $threads 128
-            done
-        done
+        echo "Size: 10240x10240, Procs: 7, Threads: 2"
+        export OMP_NUM_THREADS=2
+        mpirun $MPI_OPTS -np 28 -x OMP_NUM_THREADS=2 ./main 10240 0 2 128
+        
+        echo "Size: 10240x10240, Procs: 14, Threads: 2"
+        export OMP_NUM_THREADS=2
+        mpirun $MPI_OPTS -np 35 -x OMP_NUM_THREADS=2 ./main 10240 0 2 128
+        
+        echo "Size: 10240x10240, Procs: 21, Threads: 2"
+        export OMP_NUM_THREADS=2
+        mpirun $MPI_OPTS -np 35 -x OMP_NUM_THREADS=2 ./main 10240 0 2 128
     } 2>&1 | tee "$OUTPUT_DIR/hybrid_strassen_results.txt"
 fi
 
