@@ -1,0 +1,95 @@
+=== Summary ===
+Size: 100x100
+Threads: 1
+Total execution time: 6.9148e-05 seconds
+✓ PASSED
+Threads: 2
+Total execution time: 0.000180928 seconds
+✓ PASSED
+Threads: 4
+Total execution time: 0.000174475 seconds
+✓ PASSED
+Threads: 8
+Total execution time: 0.000257902 seconds
+✓ PASSED
+Threads: 16
+Total execution time: 0.000396507 seconds
+✓ PASSED
+Size: 1000x1000
+Threads: 1
+Total execution time: 0.0692568 seconds
+✓ PASSED
+Threads: 2
+Total execution time: 0.0379914 seconds
+✓ PASSED
+Threads: 4
+Total execution time: 0.0229472 seconds
+✓ PASSED
+Threads: 8
+Total execution time: 0.0139708 seconds
+✓ PASSED
+Threads: 16
+Total execution time: 0.013811 seconds
+✓ PASSED
+Size: 10000x10000
+Threads: 1
+Total execution time: 76.1964 seconds
+Threads: 2
+Total execution time: 37.7257 seconds
+Threads: 4
+Total execution time: 18.9551 seconds
+Threads: 8
+Total execution time: 11.3347 seconds
+Threads: 16
+Total execution time: 7.7183 seconds
+Threads: 4, Block: 128
+Total execution time: 0.0217441 seconds
+Threads: 8, Block: 128
+Total execution time: 0.019543 seconds
+Size: 100x100
+Threads: 7
+Total execution time: 0.00150704 seconds
+Total execution time: 0.00150704 seconds
+✓ PASSED
+Threads: 14
+Total execution time: 0.00176721 seconds
+Total execution time: 0.00176721 seconds
+✓ PASSED
+Threads: 21
+Total execution time: 0.00161086 seconds
+Total execution time: 0.00161086 seconds
+✓ PASSED
+Threads: 28
+Total execution time: 0.00177765 seconds
+Total execution time: 0.00177765 seconds
+✓ PASSED
+Size: 1000x1000
+Threads: 7
+Total execution time: 0.0330678 seconds
+Total execution time: 0.0330678 seconds
+✓ PASSED
+Threads: 14
+Total execution time: 0.0205355 seconds
+Total execution time: 0.0205355 seconds
+✓ PASSED
+Threads: 21
+Total execution time: 0.0157766 seconds
+Total execution time: 0.0157766 seconds
+✓ PASSED
+Threads: 28
+Total execution time: 0.0198723 seconds
+Total execution time: 0.0198723 seconds
+✓ PASSED
+Size: 10000x10000
+Threads: 7
+Total execution time: 6.09064 seconds
+Total execution time: 6.09064 seconds
+Threads: 14
+Total execution time: 4.71316 seconds
+Total execution time: 4.71316 seconds
+Threads: 21
+Total execution time: 4.72893 seconds
+Total execution time: 4.72893 seconds
+Threads: 28
+Total execution time: 4.77909 seconds
+Total execution time: 4.77909 seconds
