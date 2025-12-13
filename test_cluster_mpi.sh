@@ -58,10 +58,10 @@ done
 REACHABLE_COUNT=$(echo $REACHABLE_NODES | wc -w)
 if [ "$REACHABLE_COUNT" -eq 0 ]; then
     USE_HOSTFILE=false
-    MPI_OPTS="--oversubscribe"
+    MPI_OPTS=""
 else
     USE_HOSTFILE=true
-    MPI_OPTS="--hostfile $HOSTFILE --mca btl tcp,self"
+    MPI_OPTS="--hostfile $HOSTFILE"
 fi
 
 if [ "$USE_HOSTFILE" = true ]; then
