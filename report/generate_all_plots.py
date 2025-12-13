@@ -395,108 +395,144 @@ def plot_mpi_architecture_diagram():
     plt.close()
 
 def plot_strassen_diagram():
-    """Strassen algorithm diagram"""
-    fig, ax = plt.subplots(figsize=(14, 10))
-    ax.set_xlim(0, 14)
-    ax.set_ylim(0, 10)
+    """Strassen algorithm diagram - Accurate 7-product decomposition"""
+    fig, ax = plt.subplots(figsize=(16, 11))
+    fig.patch.set_facecolor('white')
+    ax.set_xlim(0, 16)
+    ax.set_ylim(0, 11)
     ax.axis('off')
     
     # Title
-    ax.text(7, 9.5, 'Strassen Matrix Multiplication Algorithm', 
-           ha='center', fontsize=16, fontweight='bold')
+    ax.text(8, 10.5, 'Strassen Algorithm: 7 Products Instead of 8', 
+           ha='center', fontsize=18, fontweight='bold')
+    ax.text(8, 9.9, 'Complexity: O(n^2.807) vs O(n³) for naive', 
+           ha='center', fontsize=11, style='italic', color='#555')
     
-    # Matrix partitioning
-    ax.text(2, 8.5, 'Input Matrices', ha='center', fontsize=12, fontweight='bold')
+    # ============ LEFT SIDE: Matrix Partitioning ============
+    ax.text(3, 9.2, 'Matrix Partitioning', ha='center', fontsize=13, fontweight='bold')
     
-    # Matrix A
-    colors_a = ['#5DADE2', '#7FB3D5', '#82E0AA', '#ABEBC6']
-    labels_a = ['A₁₁', 'A₁₂', 'A₂₁', 'A₂₂']
+    # Matrix A (2x2 blocks)
+    a_colors = [('#3498DB', 'A₁₁'), ('#5DADE2', 'A₁₂'), 
+                ('#2980B9', 'A₂₁'), ('#1F618D', 'A₂₂')]
     for i in range(2):
         for j in range(2):
-            rect = FancyBboxPatch((0.5+j*0.8, 7.5-i*0.8), 0.7, 0.7,
+            color, label = a_colors[i*2+j]
+            rect = FancyBboxPatch((1 + j*1.2, 7.5 - i*1.2), 1.1, 1.1,
                                  boxstyle="round,pad=0.05",
-                                 facecolor=colors_a[i*2+j], edgecolor='black', 
-                                 linewidth=2, alpha=0.8)
+                                 facecolor=color, edgecolor='black', 
+                                 linewidth=2, alpha=0.85)
             ax.add_patch(rect)
-            ax.text(0.85+j*0.8, 7.85-i*0.8, labels_a[i*2+j], 
-                   ha='center', va='center', fontsize=11, fontweight='bold', color='white')
-    ax.text(1.2, 6.3, 'A', ha='center', fontsize=13, fontweight='bold')
+            ax.text(1.55 + j*1.2, 8.05 - i*1.2, label, 
+                   ha='center', va='center', fontsize=12, fontweight='bold', color='white')
+    ax.text(2.15, 5.9, 'Matrix A', ha='center', fontsize=11, fontweight='bold')
     
-    # Matrix B
-    colors_b = ['#F8B739', '#FAD7A0', '#EC7063', '#F1948A']
-    labels_b = ['B₁₁', 'B₁₂', 'B₂₁', 'B₂₂']
+    # Matrix B (2x2 blocks)
+    b_colors = [('#E74C3C', 'B₁₁'), ('#EC7063', 'B₁₂'), 
+                ('#C0392B', 'B₂₁'), ('#922B21', 'B₂₂')]
     for i in range(2):
         for j in range(2):
-            rect = FancyBboxPatch((3.0+j*0.8, 7.5-i*0.8), 0.7, 0.7,
+            color, label = b_colors[i*2+j]
+            rect = FancyBboxPatch((4 + j*1.2, 7.5 - i*1.2), 1.1, 1.1,
                                  boxstyle="round,pad=0.05",
-                                 facecolor=colors_b[i*2+j], edgecolor='black', 
-                                 linewidth=2, alpha=0.8)
+                                 facecolor=color, edgecolor='black', 
+                                 linewidth=2, alpha=0.85)
             ax.add_patch(rect)
-            ax.text(3.35+j*0.8, 7.85-i*0.8, labels_b[i*2+j], 
-                   ha='center', va='center', fontsize=11, fontweight='bold', color='white')
-    ax.text(3.7, 6.3, 'B', ha='center', fontsize=13, fontweight='bold')
+            ax.text(4.55 + j*1.2, 8.05 - i*1.2, label, 
+                   ha='center', va='center', fontsize=12, fontweight='bold', color='white')
+    ax.text(5.15, 5.9, 'Matrix B', ha='center', fontsize=11, fontweight='bold')
     
-    # Seven products
-    ax.text(7.8, 8, 'Seven Strassen Products', ha='center', fontsize=12, fontweight='bold')
+    # ============ CENTER: 7 Strassen Products ============
+    ax.text(10.5, 9.2, '7 Strassen Products (Computed in Parallel)', ha='center', fontsize=13, fontweight='bold')
     
     products = [
-        ('M₁', '(A₁₁+A₂₂)(B₁₁+B₂₂)', '#AF7AC5'),
-        ('M₂', '(A₂₁+A₂₂)B₁₁', '#5DADE2'),
-        ('M₃', 'A₁₁(B₁₂-B₂₂)', '#48C9B0'),
-        ('M₄', 'A₂₂(B₂₁-B₁₁)', '#52BE80'),
-        ('M₅', '(A₁₁+A₁₂)B₂₂', '#F8B739'),
-        ('M₆', '(A₂₁-A₁₁)(B₁₁+B₁₂)', '#E67E22'),
-        ('M₇', '(A₁₂-A₂₂)(B₂₁+B₂₂)', '#EC7063')
+        ('M₁', '(A₁₁+A₂₂)(B₁₁+B₂₂)', '#9B59B6', 'Used in C₁₁, C₂₂'),
+        ('M₂', '(A₂₁+A₂₂)·B₁₁', '#3498DB', 'Used in C₂₁, C₂₂'),
+        ('M₃', 'A₁₁·(B₁₂−B₂₂)', '#1ABC9C', 'Used in C₁₂, C₂₂'),
+        ('M₄', 'A₂₂·(B₂₁−B₁₁)', '#27AE60', 'Used in C₁₁, C₂₁'),
+        ('M₅', '(A₁₁+A₁₂)·B₂₂', '#F39C12', 'Used in C₁₁, C₁₂'),
+        ('M₆', '(A₂₁−A₁₁)(B₁₁+B₁₂)', '#E67E22', 'Used in C₂₂'),
+        ('M₇', '(A₁₂−A₂₂)(B₂₁+B₂₂)', '#E74C3C', 'Used in C₁₁')
     ]
     
-    for i, (name, formula, color) in enumerate(products):
-        x = 5.5 + (i % 4) * 2.2
-        y = 7.0 - (i // 4) * 1.2
+    for i, (name, formula, color, usage) in enumerate(products):
+        y = 8.5 - i * 0.9
         
-        rect = FancyBboxPatch((x, y), 1.8, 0.8,
+        # Product box
+        rect = FancyBboxPatch((7.5, y - 0.35), 5.5, 0.7,
                              boxstyle="round,pad=0.08",
                              facecolor=color, edgecolor='black', 
                              linewidth=2, alpha=0.85)
         ax.add_patch(rect)
-        ax.text(x+0.9, y+0.55, name, ha='center', va='center', 
-               fontsize=12, fontweight='bold', color='white')
-        ax.text(x+0.9, y+0.25, formula, ha='center', va='center', 
-               fontsize=8, color='white')
+        
+        # Name
+        ax.text(8.0, y, name, ha='center', va='center', 
+               fontsize=14, fontweight='bold', color='white')
+        
+        # Formula
+        ax.text(10.3, y, formula, ha='center', va='center', 
+               fontsize=10, color='white', fontweight='bold')
+        
+        # Usage note
+        ax.text(13.5, y, usage, ha='right', va='center', 
+               fontsize=8, color='white', style='italic')
     
-    # Result assembly
-    ax.text(7, 4.2, 'Result Matrix Assembly', ha='center', fontsize=12, fontweight='bold')
+    # MPI assignment note
+    ax.text(10.5, 1.8, 'MPI: Each of 7 processes computes one Mᵢ', 
+           ha='center', fontsize=10, fontweight='bold',
+           bbox=dict(boxstyle='round', facecolor='#AED6F1', alpha=0.8, edgecolor='#3498DB', linewidth=2))
+    
+    # ============ BOTTOM: Result Assembly ============
+    ax.text(3.5, 4.8, 'Result Assembly', ha='center', fontsize=13, fontweight='bold')
     
     results = [
-        ('C₁₁', 'M₁+M₄-M₅+M₇', '#A23B72'),
-        ('C₁₂', 'M₃+M₅', '#6A994E'),
-        ('C₂₁', 'M₂+M₄', '#2E86AB'),
-        ('C₂₂', 'M₁-M₂+M₃+M₆', '#F18F01')
+        ('C₁₁', 'M₁+M₄−M₅+M₇', '#8E44AD'),
+        ('C₁₂', 'M₃+M₅', '#16A085'),
+        ('C₂₁', 'M₂+M₄', '#2980B9'),
+        ('C₂₂', 'M₁−M₂+M₃+M₆', '#D35400')
     ]
     
     for i in range(2):
         for j in range(2):
-            name, formula, color = results[i*2+j]
-            rect = FancyBboxPatch((5.5+j*2.5, 3.0-i*1.3), 2.3, 1.0,
+            idx = i*2 + j
+            name, formula, color = results[idx]
+            rect = FancyBboxPatch((1 + j*2.5, 3.5 - i*1.5), 2.3, 1.2,
                                  boxstyle="round,pad=0.08",
                                  facecolor=color, edgecolor='black', 
                                  linewidth=2, alpha=0.85)
             ax.add_patch(rect)
-            ax.text(6.65+j*2.5, 3.7-i*1.3, name, ha='center', va='center', 
-                   fontsize=12, fontweight='bold', color='white')
-            ax.text(6.65+j*2.5, 3.3-i*1.3, formula, ha='center', va='center', 
+            ax.text(2.15 + j*2.5, 4.3 - i*1.5, name, ha='center', va='center', 
+                   fontsize=14, fontweight='bold', color='white')
+            ax.text(2.15 + j*2.5, 3.8 - i*1.5, formula, ha='center', va='center', 
                    fontsize=9, color='white')
     
-    # Complexity analysis
-    ax.text(7, 0.9, 'Complexity Analysis', ha='center', fontsize=11, fontweight='bold',
-           bbox=dict(boxstyle='round', facecolor='#AED6F1', alpha=0.7))
-    ax.text(7, 0.4, 'Traditional: 8 multiplications → O(n³)', 
-           ha='center', fontsize=10)
-    ax.text(7, 0.0, 'Strassen: 7 multiplications → O(n²·⁸⁰⁷) ≈ O(n²·⁸¹)', 
-           ha='center', fontsize=10, color='#EC7063', fontweight='bold')
+    # Arrows from products to results
+    arrow = FancyArrowPatch((7.4, 5.5), (6.2, 4.5),
+                          arrowstyle='->', mutation_scale=25, linewidth=2.5,
+                          color='#7F8C8D', alpha=0.7)
+    ax.add_patch(arrow)
+    
+    # Complexity comparison
+    ax.text(11, 4.5, 'Complexity Reduction', ha='center', fontsize=12, fontweight='bold')
+    
+    rect = FancyBboxPatch((8.5, 3.0), 5, 1.2,
+                         boxstyle="round,pad=0.1",
+                         facecolor='#ECF0F1', edgecolor='#34495E', 
+                         linewidth=2, alpha=0.9)
+    ax.add_patch(rect)
+    
+    ax.text(11, 3.9, 'Naive: 8 multiplications → T(n) = 8T(n/2) + O(n²)', 
+           ha='center', fontsize=9, color='#7F8C8D')
+    ax.text(11, 3.4, 'Strassen: 7 multiplications → T(n) = 7T(n/2) + O(n²)', 
+           ha='center', fontsize=9, color='#E74C3C', fontweight='bold')
+    
+    # Threshold note
+    ax.text(8, 0.6, 'Threshold: When n ≤ 128, switch to naive O(n³) multiplication (better cache performance)', 
+           ha='center', fontsize=9, 
+           bbox=dict(boxstyle='round,pad=0.4', facecolor='#FEF9E7', alpha=0.8, edgecolor='#F39C12', linewidth=2))
     
     plt.tight_layout()
-    plt.savefig('mpi_strassen_diagram.png', dpi=300, bbox_inches='tight')
-    print("✓ Generated: mpi_strassen_diagram.png")
+    plt.savefig('mpi_strassen_diagram.png', dpi=300, bbox_inches='tight', facecolor='white', edgecolor='none')
+    print("✓ Generated: mpi_strassen_diagram.png (Strassen 7 Products)")
     plt.close()
 
 def plot_comprehensive_comparison():
@@ -627,97 +663,114 @@ def plot_speedup_analysis():
     plt.close()
 
 def plot_openmp_task_diagram():
-    """OpenMP task parallelism diagram"""
-    fig, ax = plt.subplots(figsize=(12, 8))
+    """OpenMP Tiled Matrix Multiplication - Actual Implementation"""
+    fig, ax = plt.subplots(figsize=(14, 10))
     fig.patch.set_facecolor('white')
-    ax.set_xlim(0, 12)
-    ax.set_ylim(0, 10)
+    ax.set_xlim(0, 14)
+    ax.set_ylim(0, 12)
     ax.axis('off')
     
     # Title
-    ax.text(6, 9.5, 'OpenMP Thread Team Execution Model', 
-           ha='center', fontsize=16, fontweight='bold')
+    ax.text(7, 11.5, 'OpenMP Naive: Tiled Matrix Multiplication', 
+           ha='center', fontsize=18, fontweight='bold')
+    ax.text(7, 10.9, '#pragma omp parallel for collapse(2) schedule(dynamic)', 
+           ha='center', fontsize=11, family='monospace', color='#2980B9',
+           bbox=dict(boxstyle='round,pad=0.3', facecolor='#EBF5FB', edgecolor='#2980B9', linewidth=2))
     
-    # Master thread
-    rect = FancyBboxPatch((2, 8.3), 8, 0.4,
-                         boxstyle="round,pad=0.05",
-                         facecolor='#5DADE2', edgecolor='black', 
-                         linewidth=2, alpha=0.85)
+    # Matrix visualization - show tiling
+    ax.text(2.5, 10.0, 'Matrix C (Output)', ha='center', fontsize=12, fontweight='bold')
+    
+    # Draw matrix with tiles
+    tile_colors = ['#5DADE2', '#F8B739', '#EC7063', '#82E0AA', '#AF7AC5', '#48C9B0', 
+                   '#F5B041', '#85929E', '#E74C3C', '#3498DB', '#27AE60', '#9B59B6',
+                   '#1ABC9C', '#E67E22', '#34495E', '#16A085']
+    
+    for i in range(4):
+        for j in range(4):
+            color = tile_colors[(i*4+j) % 16]
+            rect = FancyBboxPatch((0.5 + j*1.0, 5.5 + (3-i)*1.0), 0.9, 0.9,
+                                 boxstyle="round,pad=0.02",
+                                 facecolor=color, edgecolor='black', 
+                                 linewidth=1.5, alpha=0.7)
+            ax.add_patch(rect)
+            ax.text(0.95 + j*1.0, 5.95 + (3-i)*1.0, f'T{i*4+j}', 
+                   ha='center', va='center', fontsize=8, color='white', fontweight='bold')
+    
+    ax.text(2.5, 5.0, 'Each tile assigned\nto a thread dynamically', 
+           ha='center', fontsize=9, style='italic', color='#555')
+    
+    # Tile computation detail
+    ax.text(8.5, 10.0, 'Tile Computation (128×128)', ha='center', fontsize=12, fontweight='bold')
+    
+    # Show i-k-j loop order
+    rect = FancyBboxPatch((5.5, 6.0), 6, 3.5,
+                         boxstyle="round,pad=0.15",
+                         facecolor='#FDEBD0', edgecolor='#E67E22', 
+                         linewidth=2, alpha=0.9)
     ax.add_patch(rect)
-    ax.text(6, 8.5, 'Master Thread (Thread 0)', 
-           ha='center', va='center', fontsize=10, color='white', fontweight='bold')
     
-    # Fork annotation
-    ax.text(6, 7.8, '↓ #pragma omp parallel', 
-           ha='center', fontsize=10, style='italic',
-           bbox=dict(boxstyle='round', facecolor='#ECF0F1', alpha=0.7))
+    code_lines = [
+        'for (ii = 0; ii < n; ii += tile_size)',
+        '  for (jj = 0; jj < n; jj += tile_size)',
+        '    for (kk = 0; kk < n; kk += tile_size)',
+        '      // Inner tile computation',
+        '      for (i = ii; i < i_end; ++i)',
+        '        for (k = kk; k < k_end; ++k)',
+        '          float a_ik = A[i*n + k];',
+        '          #pragma omp simd',
+        '          for (j = jj; j < j_end; ++j)',
+        '            C[i*n+j] += a_ik * B[k*n+j];'
+    ]
     
-    # Thread team
-    colors = ['#5DADE2', '#F8B739', '#EC7063', '#82E0AA']
-    positions = [2.5, 5, 7.5, 10]
-    for i, (color, pos) in enumerate(zip(colors, positions)):
-        rect = FancyBboxPatch((pos-0.8, 4.8), 1.6, 1.2,
-                             boxstyle="round,pad=0.05",
-                             facecolor=color, edgecolor='black', linewidth=2, alpha=0.85)
-        ax.add_patch(rect)
-        ax.text(pos, 5.7, f'Thread {i}', ha='center', va='center', 
-               fontsize=11, color='white', fontweight='bold')
-        
-        # Draw arrows from master to threads
-        arrow = FancyArrowPatch((6, 7.9), (pos, 6.1),
-                              arrowstyle='->', mutation_scale=20, linewidth=2,
-                              color='#95A5A6', alpha=0.6)
-        ax.add_patch(arrow)
-        
-        # Work annotation
-        if i == 0:
-            ax.text(pos, 5.7, 'Rows', ha='center', va='center', fontsize=9, color='white', fontweight='bold')
-            ax.text(pos, 5.4, '0-249', ha='center', va='center', fontsize=8, color='white')
-        elif i == 1:
-            ax.text(pos, 5.7, 'Rows', ha='center', va='center', fontsize=9, color='white', fontweight='bold')
-            ax.text(pos, 5.4, '250-499', ha='center', va='center', fontsize=8, color='white')
-        elif i == 2:
-            ax.text(pos, 5.7, 'Rows', ha='center', va='center', fontsize=9, color='white', fontweight='bold')
-            ax.text(pos, 5.4, '500-749', ha='center', va='center', fontsize=8, color='white')
-        else:
-            ax.text(pos, 5.7, 'Rows', ha='center', va='center', fontsize=9, color='white', fontweight='bold')
-            ax.text(pos, 5.4, '750-999', ha='center', va='center', fontsize=8, color='white')
-        
-        ax.text(pos, 4.5, 'for (i=start; i<end; i++)\n  for (k=0; k<n; k++)\n    for (j=0; j<n; j++)', 
-               ha='center', va='top', fontsize=8, color='white', style='italic')
+    for idx, line in enumerate(code_lines):
+        color = '#E74C3C' if 'pragma' in line else '#2C3E50'
+        weight = 'bold' if 'pragma' in line else 'normal'
+        ax.text(5.7, 9.2 - idx*0.32, line, fontsize=8, family='monospace', 
+               color=color, fontweight=weight)
     
-    # Barrier
-    ax.text(6, 3.5, 'Implicit Barrier (#pragma omp barrier)', 
-           ha='center', fontsize=10, style='italic', color='#566573')
+    # Cache optimization explanation
+    ax.text(7, 4.8, 'Cache Optimization Strategy', ha='center', fontsize=12, fontweight='bold')
     
-    # Join annotation
-    ax.text(6, 3.0, '↓ Join Point', 
-           ha='center', fontsize=10, style='italic',
-           bbox=dict(boxstyle='round', facecolor='#F9E79F', alpha=0.5))
+    # Three boxes for optimization
+    opts = [
+        ('i-k-j Loop Order', 'Row-major access\nfor A and C matrices', '#5DADE2'),
+        ('Tile Size = 128', '128×128 tiles fit\nin L2 cache (256KB)', '#82E0AA'),
+        ('SIMD Vectorization', '#pragma omp simd\non innermost loop', '#F8B739')
+    ]
     
-    # Master thread continues
-    colors_result = ['#5DADE2', '#F8B739', '#EC7063', '#82E0AA']
-    for i, color in enumerate(colors_result):
-        rect = FancyBboxPatch((3, 2.3-i*0.35), 6, 0.3,
-                             boxstyle="round,pad=0.02",
+    for idx, (title, desc, color) in enumerate(opts):
+        x = 2.0 + idx * 4.0
+        rect = FancyBboxPatch((x, 3.3), 3.5, 1.3,
+                             boxstyle="round,pad=0.1",
                              facecolor=color, edgecolor='black', 
-                             linewidth=1.5, alpha=0.85)
+                             linewidth=2, alpha=0.8)
         ax.add_patch(rect)
-        ax.text(6, 2.45-i*0.35, f'Thread {i} Results Merged', 
-               ha='center', va='center', fontsize=9, color='white', fontweight='bold')
+        ax.text(x + 1.75, 4.3, title, ha='center', va='center', 
+               fontsize=10, color='white', fontweight='bold')
+        ax.text(x + 1.75, 3.7, desc, ha='center', va='center', 
+               fontsize=8, color='white')
     
-    # Final result
-    rect = FancyBboxPatch((2, 0.6), 8, 0.4,
-                         boxstyle="round,pad=0.05",
-                         facecolor='#5DADE2', edgecolor='black', 
-                         linewidth=2, alpha=0.85)
-    ax.add_patch(rect)
-    ax.text(6, 0.8, 'Master Thread Continues', 
-           ha='center', va='center', fontsize=10, color='white', fontweight='bold')
+    # Thread distribution
+    ax.text(7, 2.5, 'Dynamic Thread Distribution', ha='center', fontsize=12, fontweight='bold')
+    
+    # Show threads
+    thread_colors = ['#3498DB', '#E74C3C', '#2ECC71', '#9B59B6']
+    for i, color in enumerate(thread_colors):
+        circle = plt.Circle((3.5 + i*2.5, 1.5), 0.5, 
+                          facecolor=color, edgecolor='black', linewidth=2, alpha=0.85)
+        ax.add_patch(circle)
+        ax.text(3.5 + i*2.5, 1.5, f'T{i}', ha='center', va='center', 
+               fontsize=12, color='white', fontweight='bold')
+        ax.text(3.5 + i*2.5, 0.8, f'Tiles: dynamic', ha='center', fontsize=8, color='#555')
+    
+    # Performance note
+    ax.text(7, 0.2, 'Complexity: O(n³) with O(n³/p) per thread  |  Best speedup: 4× at 4 threads (1000×1000)', 
+           ha='center', fontsize=9, 
+           bbox=dict(boxstyle='round,pad=0.4', facecolor='#E8F8F5', alpha=0.8, edgecolor='#17A589', linewidth=2))
     
     plt.tight_layout()
     plt.savefig('openmp_task_diagram.png', dpi=300, bbox_inches='tight', facecolor='white', edgecolor='none')
-    print("✓ Generated: openmp_task_diagram.png")
+    print("✓ Generated: openmp_task_diagram.png (Tiled MatMul)")
     plt.close()
 
 def plot_hybrid_architecture():
