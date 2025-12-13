@@ -1,0 +1,124 @@
+=== OpenMP Strassen ===
+Size: 100x100
+Threads: 7
+
+Total execution time: 0.00313095 seconds
+
+Total execution time: 0.00313095 seconds
+
+Verifying Correctness...
+Serial verification time: 0.00114424s
+✓ PASSED
+Speedup vs Serial: 0.37x
+Threads: 14
+
+Total execution time: 0.00421978 seconds
+
+Total execution time: 0.00421978 seconds
+
+Verifying Correctness...
+Serial verification time: 0.00114517s
+✓ PASSED
+Speedup vs Serial: 0.27x
+Threads: 21
+
+Total execution time: 0.144368 seconds
+
+Total execution time: 0.144368 seconds
+
+Verifying Correctness...
+Serial verification time: 0.00090621s
+✓ PASSED
+Speedup vs Serial: 0.01x
+Threads: 28
+
+Total execution time: 0.260283 seconds
+
+Total execution time: 0.260283 seconds
+
+Verifying Correctness...
+Serial verification time: 0.00123359s
+✓ PASSED
+Speedup vs Serial: 0.00x
+Size: 1000x1000
+Threads: 7
+
+Total execution time: 0.18002 seconds
+
+Total execution time: 0.18002 seconds
+
+Verifying Correctness...
+Serial verification time: 0.895974s
+  Error at (0,2): got 246.979, expected 246.978
+  Error at (0,6): got 243.514, expected 243.515
+  Error at (0,33): got 236.029, expected 236.03
+  Error at (0,41): got 242.351, expected 242.352
+  Error at (0,45): got 247.656, expected 247.654
+✓ PASSED
+Speedup vs Serial: 4.98x
+Threads: 14
+
+Total execution time: 0.165119 seconds
+
+Total execution time: 0.165119 seconds
+
+Verifying Correctness...
+Serial verification time: 0.887907s
+  Error at (0,2): got 246.979, expected 246.978
+  Error at (0,6): got 243.514, expected 243.515
+  Error at (0,33): got 236.029, expected 236.03
+  Error at (0,41): got 242.351, expected 242.352
+  Error at (0,45): got 247.656, expected 247.654
+✓ PASSED
+Speedup vs Serial: 5.38x
+Threads: 21
+
+Total execution time: 0.152816 seconds
+
+Total execution time: 0.152816 seconds
+
+Verifying Correctness...
+Serial verification time: 0.849306s
+  Error at (0,2): got 246.979, expected 246.978
+  Error at (0,6): got 243.514, expected 243.515
+  Error at (0,33): got 236.029, expected 236.03
+  Error at (0,41): got 242.351, expected 242.352
+  Error at (0,45): got 247.656, expected 247.654
+✓ PASSED
+Speedup vs Serial: 5.56x
+Threads: 28
+
+Total execution time: 0.177439 seconds
+
+Total execution time: 0.177439 seconds
+
+Verifying Correctness...
+Serial verification time: 0.837331s
+  Error at (0,2): got 246.979, expected 246.978
+  Error at (0,6): got 243.514, expected 243.515
+  Error at (0,33): got 236.029, expected 236.03
+  Error at (0,41): got 242.351, expected 242.352
+  Error at (0,45): got 247.656, expected 247.654
+✓ PASSED
+Speedup vs Serial: 4.72x
+Size: 10000x10000
+Threads: 7
+
+Total execution time: 118.784 seconds
+
+Total execution time: 118.784 seconds
+Threads: 14
+
+Total execution time: 115.658 seconds
+
+Total execution time: 115.658 seconds
+Threads: 21
+
+Total execution time: 119.41 seconds
+
+Total execution time: 119.41 seconds
+Threads: 28
+
+Total execution time: 122.169 seconds
+
+Total execution time: 122.169 seconds

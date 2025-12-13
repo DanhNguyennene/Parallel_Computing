@@ -1,0 +1,4 @@
+Hostname: nixos
+Date: sam. 13 déc. 2025 13:11:57 +07
+CPU: 13th Gen Intel(R) Core(TM) i5-13420H
+Cores: 12

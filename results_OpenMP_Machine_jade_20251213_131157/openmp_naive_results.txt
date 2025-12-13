@@ -1,0 +1,107 @@
+=== OpenMP Naive ===
+Size: 100x100
+Threads: 1
+
+Total execution time: 0.00701106 seconds
+
+Verifying Correctness...
+Serial verification time: 0.00112845s
+✓ PASSED
+Speedup vs Serial: 0.16x
+Threads: 2
+
+Total execution time: 0.00172017 seconds
+
+Verifying Correctness...
+Serial verification time: 0.000897824s
+✓ PASSED
+Speedup vs Serial: 0.52x
+Threads: 4
+
+Total execution time: 0.00374006 seconds
+
+Verifying Correctness...
+Serial verification time: 0.00111193s
+✓ PASSED
+Speedup vs Serial: 0.30x
+Threads: 8
+
+Total execution time: 0.00207816 seconds
+
+Verifying Correctness...
+Serial verification time: 0.00110392s
+✓ PASSED
+Speedup vs Serial: 0.53x
+Threads: 16
+
+Total execution time: 0.00177552 seconds
+
+Verifying Correctness...
+Serial verification time: 0.000809987s
+✓ PASSED
+Speedup vs Serial: 0.46x
+Size: 1000x1000
+Threads: 1
+
+Total execution time: 0.189676 seconds
+
+Verifying Correctness...
+Serial verification time: 0.758554s
+✓ PASSED
+Speedup vs Serial: 4.00x
+Threads: 2
+
+Total execution time: 0.0956165 seconds
+
+Verifying Correctness...
+Serial verification time: 0.750392s
+✓ PASSED
+Speedup vs Serial: 7.85x
+Threads: 4
+
+Total execution time: 0.0618186 seconds
+
+Verifying Correctness...
+Serial verification time: 0.738044s
+✓ PASSED
+Speedup vs Serial: 11.94x
+Threads: 8
+
+Total execution time: 0.0521001 seconds
+
+Verifying Correctness...
+Serial verification time: 0.744463s
+✓ PASSED
+Speedup vs Serial: 14.29x
+Threads: 16
+
+Total execution time: 0.100871 seconds
+
+Verifying Correctness...
+Serial verification time: 0.765226s
+✓ PASSED
+Speedup vs Serial: 7.59x
+Size: 10000x10000
+Threads: 1
+
+Total execution time: 158.791 seconds
+Threads: 2
+
+Total execution time: 94.8498 seconds
+Threads: 4
+
+Total execution time: 64.967 seconds
+Threads: 8
+
+Total execution time: 53.2824 seconds
+Threads: 16
+
+Total execution time: 57.5543 seconds
+
+=== Testing Recursive Blocked Method ===
+Threads: 4, Block: 128
+
+Total execution time: 0.0911768 seconds
+Threads: 8, Block: 128
+
+Total execution time: 0.0676661 seconds
