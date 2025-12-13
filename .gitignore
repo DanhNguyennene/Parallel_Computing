@@ -3,7 +3,8 @@
 /.history
 /.vscode
 **/.spec-workflow
-
+__pycache__
+.vscode
 # Compiled Object files
 *.o
 *.obj
