@@ -1,0 +1,4 @@
+Hostname: MPI-node1
+Date: Sat Dec 13 09:08:07 UTC 2025
+Nodes: 10 (Reachable: 10)
+HYDRA build details:

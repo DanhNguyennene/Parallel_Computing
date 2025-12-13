@@ -1,0 +1,37 @@
+=== MPI Strassen ===
+Note: MPI Strassen requires exactly 7 processes
+
+Small matrix (with verification):
+Size: 1024x1024, Procs: 7
+N=1024, Padded=1024
+1835008
+Strassen completed in 0.103406 seconds.
+Naive completed in 0.213197 seconds.
+Relative L2 error: 9.15897e-07
+
+Medium matrix:
+Size: 2048x2048, Procs: 7
+N=2048, Padded=2048
+7340032
+Strassen completed in 0.43022 seconds.
+
+Large matrix:
+Size: 4096x4096, Procs: 7
+N=4096, Padded=4096
+29360128
+Strassen completed in 2.0229 seconds.
+
+Extra large matrix:
+Size: 8192x8192, Procs: 7
+N=8192, Padded=8192
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   PID 280534 RUNNING AT MPI-node1
+=   EXIT CODE: 9
+=   CLEANING UP REMAINING PROCESSES
+=   YOU CAN IGNORE THE BELOW CLEANUP MESSAGES
+===================================================================================
+YOUR APPLICATION TERMINATED WITH THE EXIT STRING: Killed (signal 9)
+This typically refers to a problem with your application.
+Please see the FAQ page for debugging suggestions

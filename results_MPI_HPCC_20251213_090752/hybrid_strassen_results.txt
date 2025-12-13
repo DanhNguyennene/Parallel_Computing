@@ -1,0 +1,14 @@
+=== Hybrid MPI+OpenMP ===
+Note: Hybrid uses 7 MPI processes with OpenMP threads per process
+
+Size: 2048x2048, MPI Procs: 7, OpenMP Threads: 3 - with verification
+N=2048, Padded=2048, Depth=4
+7340032
+Strassen completed in 7.43777 seconds.
+Naive completed in 0.811521 seconds.
+Relative L2 error: 1.874e-06
+
+Size: 4096x4096, MPI Procs: 7, OpenMP Threads: 12
+N=4096, Padded=4096, Depth=4
+29360128
+Strassen completed in 3.23352 seconds.

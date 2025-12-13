@@ -133,16 +133,16 @@ if [ -f ./mpi_program ]; then
         
         echo ""
         echo "Medium matrix tests:"
-        echo "Size: 4800x4800 (divisible by 24,48,96)"
-        for procs in 24 48 96; do
+        echo "Size: 4800x4800 (divisible by 96,144)"
+        for procs in 96 144; do
             echo "Procs: $procs"
             mpirun $MPI_OPTS -np $procs ./mpi_program 4800 0
         done
         
         echo ""
         echo "Large matrix - maximum utilization:"
-        echo "Size: 9600x9600 (divisible by 96,144,192,240)"
-        for procs in 96 144 192 240; do
+        echo "Size: 9600x9600 (divisible by 192,240)"
+        for procs in 192 240; do
             echo "Procs: $procs"
             mpirun $MPI_OPTS -np $procs ./mpi_program 9600 0
         done

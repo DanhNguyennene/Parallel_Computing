@@ -1,0 +1,115 @@
+=== MPI Naive ===
+Note: Matrix size must be divisible by number of processes
+
+Small matrix tests with varying process counts:
+Size: 960x960 (divisible by 4,8,16,24) - with verification
+Procs: 4
+
+Total execution time: 0.399429 seconds
+Computation time: 0.365172 seconds
+
+Verifying Correctness...
+Serial verification time: 1.57824s
+
+Relative L2 error: 0.000000e+00
+✓ PASSED - Results are correct!
+
+Speedup vs Serial: 3.95x
+Procs: 8
+
+Total execution time: 0.261832 seconds
+Computation time: 0.211453 seconds
+
+Verifying Correctness...
+Serial verification time: 1.61265s
+
+Relative L2 error: 0.000000e+00
+✓ PASSED - Results are correct!
+
+Speedup vs Serial: 6.16x
+Procs: 16
+
+Total execution time: 1.06329 seconds
+Computation time: 0.189011 seconds
+
+Verifying Correctness...
+Serial verification time: 2.98715s
+
+Relative L2 error: 0.000000e+00
+✓ PASSED - Results are correct!
+
+Speedup vs Serial: 2.81x
+Procs: 24
+
+Total execution time: 2.0718 seconds
+Computation time: 0.172582 seconds
+
+Verifying Correctness...
+Serial verification time: 4.91997s
+
+Relative L2 error: 0.000000e+00
+✓ PASSED - Results are correct!
+
+Speedup vs Serial: 2.37x
+
+Medium matrix tests:
+Size: 4800x4800 (divisible by 96,144)
+Procs: 96
+
+Total execution time: 106.205 seconds
+Computation time: 77.5076 seconds
+Procs: 144
+Error: N must be divisible by number of processes
+
+Total execution time: 0.0105776 seconds
+Computation time: 0 seconds
+
+Large matrix - maximum utilization:
+Size: 9600x9600 (divisible by 192,240)
+Procs: 192
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   PID 169604 RUNNING AT MPI-node2
+=   EXIT CODE: 9
+=   CLEANING UP REMAINING PROCESSES
+=   YOU CAN IGNORE THE BELOW CLEANUP MESSAGES
+===================================================================================
+[proxy:0:0@MPI-node1] HYD_pmcd_pmip_control_cmd_cb (pm/pmiserv/pmip_cb.c:899): assert (!closed) failed
+[proxy:0:0@MPI-node1] HYDT_dmxu_poll_wait_for_event (tools/demux/demux_poll.c:76): callback returned error status
+[proxy:0:0@MPI-node1] main (pm/pmiserv/pmip.c:169): demux engine error waiting for event
+[proxy:0:7@MPI-node9] HYD_pmcd_pmip_control_cmd_cb (pm/pmiserv/pmip_cb.c:899): assert (!closed) failed
+[proxy:0:7@MPI-node9] HYDT_dmxu_poll_wait_for_event (tools/demux/demux_poll.c:76): callback returned error status
+[proxy:0:7@MPI-node9] main (pm/pmiserv/pmip.c:169): demux engine error waiting for event
+[proxy:0:5@MPI-node7] HYD_pmcd_pmip_control_cmd_cb (pm/pmiserv/pmip_cb.c:899): assert (!closed) failed
+[proxy:0:5@MPI-node7] HYDT_dmxu_poll_wait_for_event (tools/demux/demux_poll.c:76): callback returned error status
+[proxy:0:5@MPI-node7] main (pm/pmiserv/pmip.c:169): demux engine error waiting for event
+[mpiexec@MPI-node1] HYDT_bscu_wait_for_completion (tools/bootstrap/utils/bscu_wait.c:73): one of the processes terminated badly; aborting
+[mpiexec@MPI-node1] HYDT_bsci_wait_for_completion (tools/bootstrap/src/bsci_wait.c:21): launcher returned error waiting for completion
+[mpiexec@MPI-node1] HYD_pmci_wait_for_completion (pm/pmiserv/pmiserv_pmci.c:179): launcher returned error waiting for completion
+[mpiexec@MPI-node1] main (ui/mpich/mpiexec.c:325): process manager error waiting for completion
+Procs: 240
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   PID 94451 RUNNING AT MPI-node8
+=   EXIT CODE: 9
+=   CLEANING UP REMAINING PROCESSES
+=   YOU CAN IGNORE THE BELOW CLEANUP MESSAGES
+===================================================================================
+[proxy:0:0@MPI-node1] HYD_pmcd_pmip_control_cmd_cb (pm/pmiserv/pmip_cb.c:899): assert (!closed) failed
+[proxy:0:0@MPI-node1] HYDT_dmxu_poll_wait_for_event (tools/demux/demux_poll.c:76): callback returned error status
+[proxy:0:0@MPI-node1] main (pm/pmiserv/pmip.c:169): demux engine error waiting for event
+[proxy:0:1@MPI-node2] HYD_pmcd_pmip_control_cmd_cb (pm/pmiserv/pmip_cb.c:899): assert (!closed) failed
+[proxy:0:1@MPI-node2] HYDT_dmxu_poll_wait_for_event (tools/demux/demux_poll.c:76): callback returned error status
+[proxy:0:1@MPI-node2] main (pm/pmiserv/pmip.c:169): demux engine error waiting for event
+[proxy:0:3@MPI-node4] HYD_pmcd_pmip_control_cmd_cb (pm/pmiserv/pmip_cb.c:899): assert (!closed) failed
+[proxy:0:3@MPI-node4] HYDT_dmxu_poll_wait_for_event (tools/demux/demux_poll.c:76): callback returned error status
+[proxy:0:3@MPI-node4] main (pm/pmiserv/pmip.c:169): demux engine error waiting for event
+[proxy:0:8@MPI-node10] HYD_pmcd_pmip_control_cmd_cb (pm/pmiserv/pmip_cb.c:899): assert (!closed) failed
+[proxy:0:8@MPI-node10] HYDT_dmxu_poll_wait_for_event (tools/demux/demux_poll.c:76): callback returned error status
+[proxy:0:8@MPI-node10] main (pm/pmiserv/pmip.c:169): demux engine error waiting for event
+[mpiexec@MPI-node1] HYDT_bscu_wait_for_completion (tools/bootstrap/utils/bscu_wait.c:73): one of the processes terminated badly; aborting
+[mpiexec@MPI-node1] HYDT_bsci_wait_for_completion (tools/bootstrap/src/bsci_wait.c:21): launcher returned error waiting for completion
+[mpiexec@MPI-node1] HYD_pmci_wait_for_completion (pm/pmiserv/pmiserv_pmci.c:179): launcher returned error waiting for completion
+[mpiexec@MPI-node1] main (ui/mpich/mpiexec.c:325): process manager error waiting for completion

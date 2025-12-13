@@ -1,0 +1,28 @@
+=== Summary ===
+Size: 960x960 (divisible by 4,8,16,24) - with verification
+Procs: 4
+Total execution time: 0.399429 seconds
+✓ PASSED - Results are correct!
+Procs: 8
+Total execution time: 0.261832 seconds
+✓ PASSED - Results are correct!
+Procs: 16
+Total execution time: 1.06329 seconds
+✓ PASSED - Results are correct!
+Procs: 24
+Total execution time: 2.0718 seconds
+✓ PASSED - Results are correct!
+Size: 4800x4800 (divisible by 96,144)
+Procs: 96
+Total execution time: 106.205 seconds
+Procs: 144
+Total execution time: 0.0105776 seconds
+Size: 9600x9600 (divisible by 192,240)
+Procs: 192
+Procs: 240
+Size: 1024x1024, Procs: 7
+Size: 2048x2048, Procs: 7
+Size: 4096x4096, Procs: 7
+Size: 8192x8192, Procs: 7
+Size: 2048x2048, MPI Procs: 7, OpenMP Threads: 3 - with verification
+Size: 4096x4096, MPI Procs: 7, OpenMP Threads: 12
