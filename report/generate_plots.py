@@ -9,23 +9,11 @@ from matplotlib.patches import FancyBboxPatch, Rectangle, FancyArrowPatch
 import numpy as np
 import seaborn as sns
 
-# Set style for academic publications
+# Set style
 sns.set_style("whitegrid")
 plt.rcParams['figure.dpi'] = 300
 plt.rcParams['savefig.dpi'] = 300
-plt.rcParams['font.size'] = 11
-plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.serif'] = ['Times New Roman', 'DejaVu Serif']
-plt.rcParams['axes.labelsize'] = 12
-plt.rcParams['axes.titlesize'] = 13
-plt.rcParams['xtick.labelsize'] = 10
-plt.rcParams['ytick.labelsize'] = 10
-plt.rcParams['legend.fontsize'] = 10
-plt.rcParams['figure.titlesize'] = 14
-plt.rcParams['axes.linewidth'] = 1.2
-plt.rcParams['grid.linewidth'] = 0.8
-plt.rcParams['lines.linewidth'] = 2.0
-plt.rcParams['lines.markersize'] = 6
+plt.rcParams['font.size'] = 10
 
 # ============================================================================
 # 1. OpenMP Naive Performance Comparison
@@ -246,78 +234,65 @@ def plot_algorithm_comparison():
 # 5. MPI Naive Algorithm Diagram
 # ============================================================================
 def draw_mpi_naive_diagram():
-    fig, ax = plt.subplots(figsize=(14, 10))
+    fig, ax = plt.subplots(figsize=(12, 8))
     ax.set_xlim(0, 10)
     ax.set_ylim(0, 10)
     ax.axis('off')
     
     # Title
-    ax.text(5, 9.7, 'MPI Naive Matrix Multiplication Architecture', 
-            fontsize=16, fontweight='bold', ha='center', family='serif')
+    ax.text(5, 9.5, 'MPI Naive Matrix Multiplication Architecture', 
+            fontsize=14, fontweight='bold', ha='center')
     
     # Master process (Rank 0)
     master = FancyBboxPatch((0.5, 7), 2, 1.5, boxstyle="round,pad=0.1",
-                           edgecolor='#1f4788', facecolor='#d0e1f9', linewidth=2.5)
+                           edgecolor='#2E86AB', facecolor='#E8F4F8', linewidth=2)
     ax.add_patch(master)
-    ax.text(1.5, 7.75, 'Rank 0\n(Master Process)', ha='center', va='center',
-           fontsize=11, fontweight='bold', family='serif')
+    ax.text(1.5, 7.75, 'Rank 0\n(Master)', ha='center', va='center',
+           fontsize=10, fontweight='bold')
     
     # Matrix A and B
-    matrix_a = Rectangle((3.5, 7.5), 0.8, 1, facecolor='#8da0cb', alpha=0.6, 
-                        edgecolor='black', linewidth=1.5)
-    matrix_b = Rectangle((4.5, 7.5), 0.8, 1, facecolor='#fc8d62', alpha=0.6,
-                        edgecolor='black', linewidth=1.5)
+    matrix_a = Rectangle((3.5, 7.5), 0.8, 1, facecolor='#A23B72', alpha=0.3)
+    matrix_b = Rectangle((4.5, 7.5), 0.8, 1, facecolor='#F18F01', alpha=0.3)
     ax.add_patch(matrix_a)
     ax.add_patch(matrix_b)
-    ax.text(3.9, 8.8, 'Matrix A', ha='center', fontsize=11, fontweight='bold', family='serif')
-    ax.text(4.9, 8.8, 'Matrix B', ha='center', fontsize=11, fontweight='bold', family='serif')
+    ax.text(3.9, 8.8, 'A', ha='center', fontsize=11, fontweight='bold')
+    ax.text(4.9, 8.8, 'B', ha='center', fontsize=11, fontweight='bold')
     
     # Scatter and Broadcast
     ax.annotate('', xy=(1.5, 5.5), xytext=(1.5, 7),
-               arrowprops=dict(arrowstyle='->', lw=2.5, color='#8da0cb'))
-    ax.text(2.5, 6.2, 'MPI_Scatter\n(distribute rows of A)', fontsize=10, 
-           color='#1f4788', style='italic', family='serif',
-           bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#8da0cb', linewidth=1.5))
+               arrowprops=dict(arrowstyle='->', lw=2, color='#A23B72'))
+    ax.text(2.2, 6.2, 'MPI_Scatter\n(rows of A)', fontsize=9, color='#A23B72')
     
     ax.annotate('', xy=(7, 5.5), xytext=(4.9, 7.5),
-               arrowprops=dict(arrowstyle='->', lw=2.5, color='#fc8d62'))
-    ax.text(6.8, 6.5, 'MPI_Bcast\n(broadcast matrix B)', fontsize=10, 
-           color='#1f4788', style='italic', family='serif',
-           bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#fc8d62', linewidth=1.5))
+               arrowprops=dict(arrowstyle='->', lw=2, color='#F18F01'))
+    ax.text(6.5, 6.5, 'MPI_Bcast\n(matrix B)', fontsize=9, color='#F18F01')
     
     # Worker processes
     worker_positions = [(0.3, 4), (2.5, 4), (4.7, 4), (6.9, 4)]
     for i, (x, y) in enumerate(worker_positions):
         worker = FancyBboxPatch((x, y), 1.5, 1, boxstyle="round,pad=0.05",
-                               edgecolor='#1f4788', facecolor='#e6f2ff', linewidth=2)
+                               edgecolor='#2E86AB', facecolor='#F0F0F0', linewidth=1.5)
         ax.add_patch(worker)
-        ax.text(x + 0.75, y + 0.7, f'Rank {i}', ha='center', fontweight='bold', 
-               fontsize=10, family='serif')
-        ax.text(x + 0.75, y + 0.3, f'Process {i}\nComputes rows {i*2}–{i*2+1}', 
-               ha='center', fontsize=8, family='serif')
+        ax.text(x + 0.75, y + 0.7, f'Rank {i}', ha='center', fontweight='bold', fontsize=9)
+        ax.text(x + 0.75, y + 0.3, f'Computes\nRows {i*2}-{i*2+1}', 
+               ha='center', fontsize=7)
     
     # Local computation
-    ax.text(5, 3, 'Local Matrix Multiplication (ijk-loop ordering)', 
-           ha='center', fontsize=10, style='italic', family='serif',
-           bbox=dict(boxstyle='round,pad=0.4', facecolor='#fff9e6', 
-                    edgecolor='#666', linewidth=1.5, alpha=0.9))
+    ax.text(5, 3, 'Local Matrix Multiplication (i-k-j loop)', 
+           ha='center', fontsize=10, style='italic', 
+           bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.3))
     
     # Gather
     for i, (x, y) in enumerate(worker_positions):
         ax.annotate('', xy=(4, 1.5), xytext=(x + 0.75, y),
-                   arrowprops=dict(arrowstyle='->', lw=2, color='#1f4788'))
+                   arrowprops=dict(arrowstyle='->', lw=1.5, color='#2E86AB'))
     
-    ax.text(5.8, 1.9, 'MPI_Gather\n(collect results)', fontsize=10, color='#1f4788',
-           style='italic', family='serif',
-           bbox=dict(boxstyle='round,pad=0.3', facecolor='white', 
-                    edgecolor='#1f4788', linewidth=1.5))
+    ax.text(5.5, 1.7, 'MPI_Gather', fontsize=9, color='#2E86AB')
     
     # Result matrix
-    result = Rectangle((3.5, 0.3), 1.5, 0.9, facecolor='#a6d96a', alpha=0.7,
-                      edgecolor='black', linewidth=1.5)
+    result = Rectangle((3.5, 0.5), 1.5, 0.8, facecolor='#90EE90', alpha=0.5)
     ax.add_patch(result)
-    ax.text(4.25, 0.75, 'Result Matrix C', ha='center', fontsize=11, 
-           fontweight='bold', family='serif')
+    ax.text(4.25, 0.9, 'Result C', ha='center', fontsize=11, fontweight='bold')
     
     plt.tight_layout()
     plt.savefig('mpi_naive_diagram.png', bbox_inches='tight')
@@ -328,42 +303,38 @@ def draw_mpi_naive_diagram():
 # 6. MPI Strassen Algorithm Diagram
 # ============================================================================
 def draw_mpi_strassen_diagram():
-    fig, ax = plt.subplots(figsize=(14, 11))
+    fig, ax = plt.subplots(figsize=(12, 10))
     ax.set_xlim(0, 12)
     ax.set_ylim(0, 10)
     ax.axis('off')
     
     # Title
-    ax.text(6, 9.7, 'MPI Strassen Algorithm: Distributed Computation', 
-            fontsize=16, fontweight='bold', ha='center', family='serif')
+    ax.text(6, 9.5, 'MPI Strassen Algorithm (7 Processes)', 
+            fontsize=14, fontweight='bold', ha='center')
     
     # Matrix partitioning
-    ax.text(1.5, 8.5, 'Input Matrix Partitioning:', fontsize=12, fontweight='bold', family='serif')
+    ax.text(1.5, 8.5, 'Input Matrices:', fontsize=11, fontweight='bold')
     
-    # Matrix A partitions - using academic color scheme
-    colors_a = ['#b3cde3', '#ccebc5']  # Softer, professional colors
+    # Matrix A partitions
+    colors_a = ['#FFB3BA', '#BAFFC9']
     labels_a = [['A₁₁', 'A₁₂'], ['A₂₁', 'A₂₂']]
-    ax.text(0.75, 8.1, 'Matrix A', fontsize=10, fontweight='bold', family='serif')
     for i in range(2):
         for j in range(2):
             rect = Rectangle((0.5 + j*0.5, 7.5 - i*0.5), 0.45, 0.45,
-                           facecolor=colors_a[i], edgecolor='black', linewidth=2)
+                           facecolor=colors_a[i], edgecolor='black', linewidth=1.5)
             ax.add_patch(rect)
             ax.text(0.5 + j*0.5 + 0.225, 7.5 - i*0.5 + 0.225, 
-                   labels_a[i][j], ha='center', va='center', fontsize=11, 
-                   fontweight='bold', family='serif')
+                   labels_a[i][j], ha='center', va='center', fontsize=10)
     
     # Matrix B partitions
     labels_b = [['B₁₁', 'B₁₂'], ['B₂₁', 'B₂₂']]
-    ax.text(2.25, 8.1, 'Matrix B', fontsize=10, fontweight='bold', family='serif')
     for i in range(2):
         for j in range(2):
             rect = Rectangle((2 + j*0.5, 7.5 - i*0.5), 0.45, 0.45,
-                           facecolor=colors_a[i], edgecolor='black', linewidth=2)
+                           facecolor=colors_a[i], edgecolor='black', linewidth=1.5)
             ax.add_patch(rect)
             ax.text(2 + j*0.5 + 0.225, 7.5 - i*0.5 + 0.225, 
-                   labels_b[i][j], ha='center', va='center', fontsize=11,
-                   fontweight='bold', family='serif')
+                   labels_b[i][j], ha='center', va='center', fontsize=10)
     
     # 7 Processes computing M1-M7
     products = [
@@ -376,15 +347,11 @@ def draw_mpi_strassen_diagram():
         'M₇ = (A₁₂-A₂₂)(B₂₁+B₂₂)'
     ]
     
-    # Professional color palette
-    colors = ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69']
+    colors = plt.cm.Set3(np.linspace(0, 1, 7))
     
     # Draw processes in two rows
     y_positions = [5.5, 3.5]
     x_start = 0.5
-    
-    ax.text(6, 6.3, 'Parallel Computation (7 MPI Processes)', fontsize=11, 
-           fontweight='bold', ha='center', family='serif')
     
     for i, product in enumerate(products):
         row = 0 if i < 4 else 1
@@ -395,38 +362,33 @@ def draw_mpi_strassen_diagram():
         # Process box
         box = FancyBboxPatch((x, y), 2.5, 0.8, boxstyle="round,pad=0.05",
                             edgecolor='black', facecolor=colors[i], 
-                            linewidth=2, alpha=0.8)
+                            linewidth=2, alpha=0.7)
         ax.add_patch(box)
         
         # Text
-        rank_num = i + 1 if i < 6 else 0
-        ax.text(x + 1.25, y + 0.55, f'Process {rank_num}', 
-               ha='center', fontweight='bold', fontsize=9, family='serif')
-        ax.text(x + 1.25, y + 0.25, product, ha='center', fontsize=9, family='serif')
+        ax.text(x + 1.25, y + 0.55, f'Rank {i+1 if i < 6 else 0}', 
+               ha='center', fontweight='bold', fontsize=9)
+        ax.text(x + 1.25, y + 0.25, product, ha='center', fontsize=8)
     
-    # MPI Communication annotations
-    ax.annotate('', xy=(1, 5.3), xytext=(1, 7.4),
-               arrowprops=dict(arrowstyle='->', lw=2, color='#1f4788'))
-    ax.text(0.3, 6.3, 'Distribute', ha='center', fontsize=9, style='italic',
-           family='serif', rotation=90)
+    # MPI Communication
+    ax.text(6, 6.5, 'MPI_Scatterv (distribute submatrices)', 
+           ha='center', fontsize=9, style='italic',
+           bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.5))
     
-    ax.annotate('', xy=(4, 0.8), xytext=(4, 3.3),
-               arrowprops=dict(arrowstyle='->', lw=2, color='#1f4788'))
-    ax.text(4.7, 2.1, 'Collect', ha='center', fontsize=9, style='italic',
-           family='serif', rotation=90)
+    ax.text(6, 2.5, 'MPI_Gather (collect M₁-M₇)', 
+           ha='center', fontsize=9, style='italic',
+           bbox=dict(boxstyle='round', facecolor='lightgreen', alpha=0.5))
     
     # Result combination
-    result_box = FancyBboxPatch((2.5, 0.5), 7, 1.4, boxstyle="round,pad=0.1",
-                               edgecolor='#1f4788', facecolor='#d0e1f9', 
-                               linewidth=2.5)
+    result_box = FancyBboxPatch((3, 0.8), 6, 1.2, boxstyle="round,pad=0.1",
+                               edgecolor='#2E86AB', facecolor='#E8F4F8', 
+                               linewidth=2)
     ax.add_patch(result_box)
     
-    ax.text(6, 1.6, 'Final Combination (Process 0):', ha='center', 
-           fontweight='bold', fontsize=11, family='serif')
-    ax.text(6, 1.2, 'C₁₁ = M₁ + M₄ − M₅ + M₇     C₁₂ = M₃ + M₅', 
-           ha='center', fontsize=9, family='serif')
-    ax.text(6, 0.85, 'C₂₁ = M₂ + M₄     C₂₂ = M₁ − M₂ + M₃ + M₆', 
-           ha='center', fontsize=9, family='serif')
+    ax.text(6, 1.6, 'Rank 0 Combines Results:', ha='center', 
+           fontweight='bold', fontsize=10)
+    ax.text(6, 1.3, 'C₁₁ = M₁+M₄-M₅+M₇  |  C₁₂ = M₃+M₅', ha='center', fontsize=8)
+    ax.text(6, 1.0, 'C₂₁ = M₂+M₄  |  C₂₂ = M₁-M₂+M₃+M₆', ha='center', fontsize=8)
     
     plt.tight_layout()
     plt.savefig('mpi_strassen_diagram.png', bbox_inches='tight')
@@ -437,32 +399,27 @@ def draw_mpi_strassen_diagram():
 # 7. OpenMP Task Parallelism Diagram
 # ============================================================================
 def draw_openmp_task_diagram():
-    fig, ax = plt.subplots(figsize=(14, 9))
+    fig, ax = plt.subplots(figsize=(12, 8))
     ax.set_xlim(0, 12)
     ax.set_ylim(0, 10)
     ax.axis('off')
     
     # Title
-    ax.text(6, 9.7, 'OpenMP Task-Based Parallelism Architecture', 
-            fontsize=16, fontweight='bold', ha='center', family='serif')
+    ax.text(6, 9.5, 'OpenMP Task-Based Parallelism', 
+            fontsize=14, fontweight='bold', ha='center')
     
     # Main thread
-    main_thread = FancyBboxPatch((4, 8), 4, 0.9, boxstyle="round,pad=0.1",
-                                edgecolor='#1f4788', facecolor='#d0e1f9', 
-                                linewidth=2.5)
+    main_thread = FancyBboxPatch((4.5, 8), 3, 0.8, boxstyle="round,pad=0.1",
+                                edgecolor='#2E86AB', facecolor='#E8F4F8', 
+                                linewidth=2)
     ax.add_patch(main_thread)
-    ax.text(6, 8.5, 'Master Thread', ha='center', va='center', 
-           fontsize=12, fontweight='bold', family='serif')
-    ax.text(6, 8.15, '#pragma omp single', ha='center', va='center',
-           fontsize=9, style='italic', family='monospace')
+    ax.text(6, 8.4, 'Master Thread\n#pragma omp single', 
+           ha='center', va='center', fontsize=10, fontweight='bold')
     
     # Task creation
-    ax.text(6, 7.3, 'Task Creation:', ha='center', 
-           fontsize=11, fontweight='bold', family='serif')
-    ax.text(6, 7.0, '#pragma omp taskgroup', ha='center', 
-           fontsize=9, style='italic', family='monospace',
-           bbox=dict(boxstyle='round,pad=0.3', facecolor='#fff9e6', 
-                    edgecolor='#666', linewidth=1.5, alpha=0.9))
+    ax.text(6, 7.2, '#pragma omp taskgroup', ha='center', 
+           fontsize=9, style='italic',
+           bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.3))
     
     # Tasks for 8 multiplications (Naive) or 7 (Strassen)
     task_labels_naive = [
@@ -479,63 +436,54 @@ def draw_openmp_task_diagram():
         'A₂₂ × B₂₂ → C₂₂'
     ]
     
-    # Professional color palette for tasks
-    colors = ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5']
+    colors = plt.cm.Pastel1(np.linspace(0, 1, 8))
     
     # First wave of tasks
-    ax.text(0.8, 6.5, 'First Wave:', fontsize=11, fontweight='bold', family='serif')
+    ax.text(1, 6.5, 'Wave 1:', fontsize=10, fontweight='bold')
     for i, label in enumerate(task_labels_naive):
         x = 1.5 + i * 2.3
         task = FancyBboxPatch((x, 5.5), 2, 0.7, boxstyle="round,pad=0.05",
                              edgecolor='black', facecolor=colors[i], 
-                             linewidth=2, alpha=0.85)
+                             linewidth=1.5, alpha=0.8)
         ax.add_patch(task)
-        ax.text(x + 1, 5.9, f'Task {i+1}', ha='center', 
-               fontweight='bold', fontsize=9, family='serif')
-        ax.text(x + 1, 5.65, label, ha='center', fontsize=8, family='serif')
+        ax.text(x + 1, 5.85, f'Task {i+1}', ha='center', 
+               fontweight='bold', fontsize=8)
+        ax.text(x + 1, 5.65, label, ha='center', fontsize=7)
     
-    # Task wait synchronization
-    ax.text(6, 4.9, 'Synchronization Barrier', ha='center', 
-           fontsize=10, fontweight='bold', family='serif')
-    ax.text(6, 4.6, '#pragma omp taskwait', ha='center', 
-           fontsize=9, style='italic', family='monospace',
-           bbox=dict(boxstyle='round,pad=0.3', facecolor='#ffd4a3', 
-                    edgecolor='#666', linewidth=1.5, alpha=0.9))
+    # Task wait
+    ax.text(6, 4.8, '#pragma omp taskwait', ha='center', 
+           fontsize=9, style='italic',
+           bbox=dict(boxstyle='round', facecolor='orange', alpha=0.3))
     
     # Second wave of tasks
-    ax.text(0.8, 4.2, 'Second Wave:', fontsize=11, fontweight='bold', family='serif')
+    ax.text(1, 4.3, 'Wave 2:', fontsize=10, fontweight='bold')
     for i, label in enumerate(task_labels_naive2):
         x = 1.5 + i * 2.3
         task = FancyBboxPatch((x, 3.3), 2, 0.7, boxstyle="round,pad=0.05",
                              edgecolor='black', facecolor=colors[i+4], 
-                             linewidth=2, alpha=0.85)
+                             linewidth=1.5, alpha=0.8)
         ax.add_patch(task)
-        ax.text(x + 1, 3.7, f'Task {i+5}', ha='center', 
-               fontweight='bold', fontsize=9, family='serif')
-        ax.text(x + 1, 3.45, label, ha='center', fontsize=8, family='serif')
+        ax.text(x + 1, 3.65, f'Task {i+5}', ha='center', 
+               fontweight='bold', fontsize=8)
+        ax.text(x + 1, 3.45, label, ha='center', fontsize=7)
     
     # Thread pool
-    ax.text(6, 2.3, 'OpenMP Thread Pool', ha='center', 
-           fontsize=11, fontweight='bold', family='serif')
-    ax.text(6, 2.05, '(Dynamic Task Scheduling)', ha='center',
-           fontsize=9, style='italic', family='serif')
+    ax.text(6, 2.2, 'Thread Pool (Dynamic Scheduling)', ha='center', 
+           fontsize=10, fontweight='bold')
     
-    # Professional thread colors
-    thread_colors = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', 
-                    '#ff7f00', '#ffff33', '#a65628', '#f781bf']
+    thread_colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', 
+                    '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2']
     for i in range(8):
         x = 1.5 + i * 1.2
-        thread = Rectangle((x, 0.9), 0.9, 0.9, facecolor=thread_colors[i], 
-                          edgecolor='black', linewidth=2, alpha=0.8)
+        thread = Rectangle((x, 1), 0.8, 0.8, facecolor=thread_colors[i], 
+                          edgecolor='black', linewidth=1.5)
         ax.add_patch(thread)
-        ax.text(x + 0.45, 1.35, f'Thread {i}', ha='center', va='center', 
-               fontsize=8, fontweight='bold', family='serif')
+        ax.text(x + 0.4, 1.4, f'T{i}', ha='center', va='center', 
+               fontsize=9, fontweight='bold')
     
-    # Recursive nature note
-    ax.text(6, 0.3, 'Note: Tasks recursively subdivide until base case threshold', 
-           ha='center', fontsize=9, style='italic', family='serif',
-           bbox=dict(boxstyle='round,pad=0.3', facecolor='white', 
-                    edgecolor='gray', linewidth=1, alpha=0.8))
+    # Recursive nature
+    ax.text(6, 0.3, 'Each task recursively divides until threshold is reached', 
+           ha='center', fontsize=9, style='italic')
     
     plt.tight_layout()
     plt.savefig('openmp_task_diagram.png', bbox_inches='tight')
@@ -546,27 +494,25 @@ def draw_openmp_task_diagram():
 # 8. Hybrid MPI+OpenMP Architecture
 # ============================================================================
 def draw_hybrid_architecture():
-    fig, ax = plt.subplots(figsize=(14, 10))
+    fig, ax = plt.subplots(figsize=(12, 9))
     ax.set_xlim(0, 12)
     ax.set_ylim(0, 10)
     ax.axis('off')
     
     # Title
-    ax.text(6, 9.7, 'Hybrid MPI+OpenMP Parallel Architecture', 
-            fontsize=16, fontweight='bold', ha='center', family='serif')
+    ax.text(6, 9.5, 'Hybrid MPI+OpenMP Architecture', 
+            fontsize=14, fontweight='bold', ha='center')
     
     # Network layer
-    network = Rectangle((0.2, 6.8), 11.6, 0.35, facecolor='#ffd92f', 
-                       edgecolor='black', linewidth=2.5, alpha=0.7)
+    network = Rectangle((0.2, 6.8), 11.6, 0.3, facecolor='#FFD700', 
+                       edgecolor='black', linewidth=2, alpha=0.5)
     ax.add_patch(network)
-    ax.text(6, 6.98, 'MPI Communication Layer', 
-           ha='center', va='center', fontsize=11, fontweight='bold', family='serif')
-    ax.text(6, 6.78, '(Distributed Memory / Inter-Process)', 
-           ha='center', va='center', fontsize=8, style='italic', family='serif')
+    ax.text(6, 6.95, 'MPI Communication Layer (Inter-Process)', 
+           ha='center', va='center', fontsize=9, fontweight='bold')
     
     # 7 MPI Processes
     process_width = 1.5
-    process_height = 2.1
+    process_height = 2
     spacing = 0.1
     start_x = 0.5
     
@@ -574,58 +520,54 @@ def draw_hybrid_architecture():
         x = start_x + i * (process_width + spacing)
         
         # Process box
-        process = FancyBboxPatch((x, 3.9), process_width, process_height,
+        process = FancyBboxPatch((x, 4), process_width, process_height,
                                 boxstyle="round,pad=0.05",
-                                edgecolor='#1f4788', facecolor='#d0e1f9',
-                                linewidth=2.5)
+                                edgecolor='#2E86AB', facecolor='#E8F4F8',
+                                linewidth=2)
         ax.add_patch(process)
         
         # Process label
         rank = i + 1 if i < 6 else 0
-        ax.text(x + process_width/2, 5.7, f'Process {rank}',
-               ha='center', fontweight='bold', fontsize=9, family='serif')
+        ax.text(x + process_width/2, 5.7, f'MPI Rank {rank}',
+               ha='center', fontweight='bold', fontsize=8)
         
         # OpenMP threads within each process
-        thread_colors = ['#e78ac3', '#8da0cb', '#a6d854', '#ffd92f']
+        thread_colors = plt.cm.Set3(np.linspace(0, 1, 4))
         for j in range(4):
-            thread_y = 4.15 + j * 0.37
-            thread = Rectangle((x + 0.15, thread_y), process_width - 0.3, 0.32,
+            thread_y = 4.2 + j * 0.35
+            thread = Rectangle((x + 0.1, thread_y), process_width - 0.2, 0.3,
                              facecolor=thread_colors[j], edgecolor='black',
-                             linewidth=1.5, alpha=0.85)
+                             linewidth=1, alpha=0.7)
             ax.add_patch(thread)
-            ax.text(x + process_width/2, thread_y + 0.16, f'T{j}',
-                   ha='center', fontsize=7, fontweight='bold', family='serif')
+            ax.text(x + process_width/2, thread_y + 0.15, f'Thread {j}',
+                   ha='center', fontsize=6)
     
     # OpenMP layer label
-    ax.text(6, 3.4, 'OpenMP Layer', ha='center', fontsize=11, fontweight='bold',
-           family='serif',
-           bbox=dict(boxstyle='round,pad=0.4', facecolor='#a6d96a', 
-                    edgecolor='black', linewidth=2, alpha=0.7))
-    ax.text(6, 3.1, '(Shared Memory / Intra-Process Threading)', ha='center',
-           fontsize=8, style='italic', family='serif')
+    ax.text(6, 3.5, 'OpenMP Layer (Intra-Process Shared Memory)', 
+           ha='center', fontsize=10, fontweight='bold',
+           bbox=dict(boxstyle='round', facecolor='lightgreen', alpha=0.5))
     
     # Workflow
-    workflow_y = 2.4
-    ax.text(6, workflow_y, 'Hybrid Execution Model:', ha='center', 
-           fontsize=12, fontweight='bold', family='serif')
+    workflow_y = 2.5
+    ax.text(6, workflow_y, 'Execution Flow:', ha='center', 
+           fontsize=11, fontweight='bold')
     
     steps = [
-        '① MPI distributes Strassen submatrices (M₁–M₇) across 7 processes',
-        '② Each MPI process spawns OpenMP threads for local computation',
-        '③ OpenMP threads perform parallel matrix operations using shared memory',
-        '④ Processes synchronize and gather partial results via MPI',
-        '⑤ Master process (Rank 0) combines results into final matrix'
+        '1. MPI scatters Strassen submatrices to 7 processes',
+        '2. Each process uses OpenMP to compute its product (M₁-M₇)',
+        '3. OpenMP threads collaborate on matrix operations',
+        '4. MPI gathers results back to Rank 0',
+        '5. Rank 0 combines M₁-M₇ into final result'
     ]
     
     for i, step in enumerate(steps):
-        ax.text(6, workflow_y - 0.35 - i*0.28, step, ha='center', 
-               fontsize=8.5, family='serif')
+        ax.text(6, workflow_y - 0.3 - i*0.25, step, ha='center', 
+               fontsize=8, style='italic')
     
     # Performance note
-    ax.text(6, 0.25, 'Two-level parallelism: Coarse-grained (MPI) + Fine-grained (OpenMP)',
-           ha='center', fontsize=9, family='serif',
-           bbox=dict(boxstyle='round,pad=0.4', facecolor='#fff9e6', 
-                    edgecolor='#666', linewidth=1.5, alpha=0.9))
+    ax.text(6, 0.3, 'Achieves parallelism at both inter-node (MPI) and intra-node (OpenMP) levels',
+           ha='center', fontsize=9, 
+           bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.4))
     
     plt.tight_layout()
     plt.savefig('hybrid_architecture.png', bbox_inches='tight')
